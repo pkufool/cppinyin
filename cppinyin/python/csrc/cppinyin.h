@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#ifndef SSENTENCEPIECE_PYTHON_CSRC_SSENTENCEPIECE_H_
-#define SSENTENCEPIECE_PYTHON_CSRC_SSENTENCEPIECE_H_
+#ifndef CPPINYIN_PYTHON_CSRC_CPPINYIN_H_
+#define CPPINYIN_PYTHON_CSRC_CPPINYIN_H_
 
 #include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
@@ -25,4 +25,4 @@
 
 namespace py = pybind11;
 
-#endif // SSENTENCEPIECE_PYTHON_CSRC_SSENTENCEPIECE_H_
+#endif // CPPINYIN_PYTHON_CSRC_CPPINYIN_H_

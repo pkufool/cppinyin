@@ -48,17 +48,19 @@ public:
 
   void Build(const std::string &vocab_path);
 
-  void Encode(const std::string &str, std::vector<std::string> *ostrs) const;
+  void Encode(const std::string &str, std::vector<std::string> *ostrs,
+              bool tone = true, bool split = false) const;
 
   void Encode(const std::vector<std::string> &strs,
-              std::vector<std::vector<std::string>> *ostrs) const;
+              std::vector<std::vector<std::string>> *ostrs, bool tone = true,
+              bool split = false) const;
 
 private:
   void LoadVocab(const std::string &vocab_path);
 
   void EncodeBase(const std::string &str, std::vector<DagItem> *route) const;
-  void EncodeBase(const std::string &str,
-                  std::vector<std::string> *ostrs) const;
+  void EncodeBase(const std::string &str, std::vector<std::string> *ostrs,
+                  bool tone = true, bool split = false) const;
 
   void GetDag(const std::string &str, DagType *dag) const;
 

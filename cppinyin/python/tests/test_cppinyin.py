@@ -18,80 +18,33 @@
 
 # To run this single test, use
 #
-#  ctest --verbose -R ssentencepiece_test_py
+#  ctest --verbose -R cppinyin_test_py
 
 
 import unittest
 import numpy as np
 
-from ssentencepiece import Ssentencepiece
-import sentencepiece as spm
+import cppinyin as cp
 
 
-class TestEncodeDecode(unittest.TestCase):
+class TestEncode(unittest.TestCase):
     def test_encode_decode(self):
-        sp = spm.SentencePieceProcessor()
-        sp.load("ssentencepiece/python/tests/testdata/bpe.model")
-        ssp = Ssentencepiece("ssentencepiece/python/tests/testdata/bpe.vocab")
-        sentences = [
-            "Licensed under the Apache License Version the License",
-            "you may not use this file except in compliance with the License",
-            "You may obtain a copy of the License at",
-            "Unless required by applicable law or agreed to in writing software",
-            "distributed under the License is distributed on an AS IS BASIS",
-            "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied",
-            "See the License for the specific language governing permissions and",
+        print("start")
+        cpp = cp.Encoder("cppinyin/python/tests/testdata/pinyin.txt")
+        print("init")
+        phrases = ["一切反动派都是纸老虎", "宜将剩勇追穷寇不可沽名学霸王", "我是中国人民的儿子"]
+        pinyins = [
+            "yī qiè fǎn dòng pài dōu shì zhǐ lǎo hǔ",
+            "yí jiāng shèng yǒng zhuī qióng kòu bù kě gū míng xué bà wáng",
+            "wǒ shì zhōng guó rén mín de ér zi",
         ]
-        sentences = [x.upper() for x in sentences]
-        for sen in sentences:
-            r1 = sp.encode(sen)
-            r2 = ssp.encode(sen)
-            assert r1 == r2, (r1, r2)
-            r1 = sp.encode(sen, out_type=str)
-            r2 = ssp.encode(sen, out_type=str)
-            assert r1 == r2, (r1, r2)
-            r1 = sp.decode(sp.encode(sen))
-            r2 = ssp.decode(ssp.encode(sen))
-            assert r1 == r2, (r1, r2)
-
-        r1 = sp.encode(sentences)
-        r2 = ssp.encode(sentences)
-        assert r1 == r2, (r1, r2)
-        r1 = sp.decode(sp.encode(sentences))
-        r2 = ssp.decode(ssp.encode(sentences))
-        assert r1 == r2, (r1, r2)
-
-    def test_encode_decode_bbpe(self):
-        sp = spm.SentencePieceProcessor()
-        sp.load("ssentencepiece/python/tests/testdata/bbpe.model")
-        ssp = Ssentencepiece("ssentencepiece/python/tests/testdata/bbpe.vocab")
-        sentences = [
-            "Licensed under the Apache License Version the License",
-            "you may not use this file except in compliance with the License",
-            "You may obtain a copy of the License at",
-            "Unless required by applicable law or agreed to in writing software",
-            "distributed under the License is distributed on an AS IS BASIS",
-            "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied",
-            "See the License for the specific language governing permissions and",
-        ]
-        sentences = [x.upper() for x in sentences]
-        for sen in sentences:
-            r1 = sp.encode(sen)
-            r2 = ssp.encode(sen)
-            assert r1 == r2, (r1, r2)
-            r1 = sp.encode(sen, out_type=str)
-            r2 = ssp.encode(sen, out_type=str)
-            assert r1 == r2, (r1, r2)
-            r1 = sp.decode(sp.encode(sen))
-            r2 = ssp.decode(ssp.encode(sen))
-            assert r1 == r2, (r1, r2)
-
-        r1 = sp.encode(sentences)
-        r2 = ssp.encode(sentences)
-        assert r1 == r2, (r1, r2)
-        r1 = sp.decode(sp.encode(sentences))
-        r2 = ssp.decode(ssp.encode(sentences))
-        assert r1 == r2, (r1, r2)
+        for i, p in enumerate(phrases):
+            res = " ".join(cpp.encode(p))
+            print(res)
+            assert res == pinyins[i], (res, pinyins[i])
+        res = cpp.encode(phrases)
+        res = [" ".join(x) for x in res]
+        assert pinyins == res, (pinyins, res)
 
 
 if __name__ == "__main__":

@@ -16,17 +16,17 @@
  * limitations under the License.
  */
 
-#include "ssentencepiece/python/csrc/ssentencepiece.h"
-#include "ssentencepiece/csrc/ssentencepiece.h"
+#include "cppinyin/python/csrc/cppinyin.h"
+#include "cppinyin/csrc/cppinyin.h"
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace ssentencepiece {
+namespace cppinyin {
 
-void PybindSsentencepiece(py::module &m) {
-  using PyClass = Ssentencepiece;
-  py::class_<PyClass>(m, "ssentencepiece")
+void PybindCppinyin(py::module &m) {
+  using PyClass = PinyinEncoder;
+  py::class_<PyClass>(m, "Encoder")
       .def(
           py::init([](int32_t num_threads = std::thread::hardware_concurrency())
                        -> std::unique_ptr<PyClass> {
@@ -51,71 +51,34 @@ void PybindSsentencepiece(py::module &m) {
           py::arg("vocab_path"), py::call_guard<py::gil_scoped_release>())
       .def(
           "encode",
-          [](PyClass &self, const std::string &str,
-             bool output_id = true) -> py::object {
-            if (output_id) {
-              std::vector<int32_t> oids;
-              self.Encode(str, &oids);
-              return py::cast(oids);
-            } else {
-              std::vector<std::string> ostrs;
-              self.Encode(str, &ostrs);
-              return py::cast(ostrs);
+          [](PyClass &self, const std::string &str, bool tone,
+             bool split) -> py::object {
+            std::vector<std::string> ostrs;
+            {
+              py::gil_scoped_release release;
+              self.Encode(str, &ostrs, tone, split);
             }
+            return py::cast(ostrs);
           },
-          py::arg("str"), py::arg("output_id") = true,
-          py::call_guard<py::gil_scoped_release>())
+          py::arg("str"), py::arg("tone") = true, py::arg("split") = false)
       .def(
           "encode",
-          [](PyClass &self, const std::vector<std::string> &strs,
-             bool output_id = true) -> py::object {
-            if (output_id) {
-              std::vector<std::vector<int32_t>> oids;
-              self.Encode(strs, &oids);
-              return py::cast(oids);
-            } else {
-              std::vector<std::vector<std::string>> ostrs;
-              self.Encode(strs, &ostrs);
-              return py::cast(ostrs);
-            }
-          },
-          py::arg("strs"), py::arg("output_id") = true,
-          py::call_guard<py::gil_scoped_release>())
-      .def(
-          "decode",
-          [](PyClass &self, const std::vector<int32_t> &ids) -> py::str {
-            std::string res;
+          [](PyClass &self, const std::vector<std::string> &strs, bool tone,
+             bool split) -> py::object {
+            std::vector<std::vector<std::string>> ostrs;
             {
               py::gil_scoped_release release;
-              res = self.Decode(ids);
+              self.Encode(strs, &ostrs, tone, split);
             }
-            return py::str(
-                PyUnicode_DecodeUTF8(res.c_str(), res.size(), "ignore"));
+            return py::cast(ostrs);
           },
-          py::arg("ids"))
-      .def(
-          "decode",
-          [](PyClass &self,
-             const std::vector<std::vector<int32_t>> &ids) -> py::list {
-            std::vector<std::string> res;
-            {
-              py::gil_scoped_release release;
-              res = self.Decode(ids);
-            }
-            py::list result;
-            for (const auto &r : res) {
-              result.append(
-                  py::str(PyUnicode_DecodeUTF8(r.c_str(), r.size(), "ignore")));
-            }
-            return result;
-          },
-          py::arg("ids"));
+          py::arg("strs"), py::arg("tone") = true, py::arg("split") = false);
 }
 
-PYBIND11_MODULE(_ssentencepiece, m) {
-  m.doc() = "Python wrapper for simple sentencepiece.";
+PYBIND11_MODULE(_cppinyin, m) {
+  m.doc() = "Python wrapper for Chinese to pinyin.";
 
-  PybindSsentencepiece(m);
+  PybindCppinyin(m);
 }
 
-} // namespace ssentencepiece
+} // namespace cppinyin

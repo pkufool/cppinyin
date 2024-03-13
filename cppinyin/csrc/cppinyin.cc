@@ -134,14 +134,16 @@ void PinyinEncoder::EncodeBase(const std::string &str,
 }
 
 void PinyinEncoder::EncodeBase(const std::string &str,
-                               std::vector<std::string> *ostrs) const {
+                               std::vector<std::string> *ostrs, bool tone,
+                               bool split) const {
   std::vector<DagItem> route;
   EncodeBase(str, &route);
   Cut(str, route, ostrs);
 }
 
 void PinyinEncoder::Encode(const std::string &str,
-                           std::vector<std::string> *ostrs) const {
+                           std::vector<std::string> *ostrs, bool tone /*=true*/,
+                           bool split /*=false*/) const {
   ostrs->clear();
   std::vector<std::string> substrs;
   std::string word;
@@ -152,9 +154,10 @@ void PinyinEncoder::Encode(const std::string &str,
   std::vector<std::vector<std::string>> subostrs(substrs.size());
   std::vector<std::future<void>> results;
   for (int32_t i = 0; i < subostrs.size(); ++i) {
-    results.emplace_back(pool_->enqueue([this, i, &substrs, &subostrs] {
-      return this->EncodeBase(substrs[i], &(subostrs[i]));
-    }));
+    results.emplace_back(
+        pool_->enqueue([this, i, &substrs, &subostrs, tone, split] {
+          return this->EncodeBase(substrs[i], &(subostrs[i]), tone, split);
+        }));
   }
   for (auto &&result : results) {
     result.get();
@@ -165,7 +168,8 @@ void PinyinEncoder::Encode(const std::string &str,
 }
 
 void PinyinEncoder::Encode(const std::vector<std::string> &strs,
-                           std::vector<std::vector<std::string>> *ostrs) const {
+                           std::vector<std::vector<std::string>> *ostrs,
+                           bool tone /*=true*/, bool split /*=false*/) const {
   ostrs->resize(strs.size());
   std::vector<std::future<void>> results;
   for (int32_t i = 0; i < strs.size(); ++i) {
