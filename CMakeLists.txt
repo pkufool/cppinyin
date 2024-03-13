@@ -22,7 +22,7 @@ set(CMAKE_INSTALL_RPATH ${CPPINYIN_RPATH_ORIGIN})
 set(CMAKE_BUILD_RPATH ${CPPINYIN_RPATH_ORIGIN})
 
 option(CPPINYIN_ENABLE_TESTS "Whether to build tests" ON)
-option(CPPINYIN_BUILD_PYTHON "Whether to build Python" ON)
+option(CPPINYIN_BUILD_PYTHON "Whether to build Python" OFF)
 option(BUILD_SHARED_LIBS "Whether to build shared libraries" ON)
 
 if(WIN32)
