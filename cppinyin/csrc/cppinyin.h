@@ -24,6 +24,7 @@
 #include "cppinyin/csrc/threadpool.h"
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -49,27 +50,52 @@ public:
   void Build(const std::string &vocab_path);
 
   void Encode(const std::string &str, std::vector<std::string> *ostrs,
-              bool tone = true, bool split = false) const;
+              bool tone = true, bool partial = false) const;
 
   void Encode(const std::vector<std::string> &strs,
               std::vector<std::vector<std::string>> *ostrs, bool tone = true,
-              bool split = false) const;
+              bool partial = false) const;
 
 private:
   void LoadVocab(const std::string &vocab_path);
 
   void EncodeBase(const std::string &str, std::vector<DagItem> *route) const;
+
   void EncodeBase(const std::string &str, std::vector<std::string> *ostrs,
-                  bool tone = true, bool split = false) const;
+                  bool tone, bool partial) const;
 
   void GetDag(const std::string &str, DagType *dag) const;
 
   void CalcDp(const std::string &str, const DagType &dag,
               std::vector<DagItem> *route) const;
 
-  void Cut(const std::string &str, const std::vector<DagItem> &route,
-           std::vector<std::string> *ostrs) const;
+  void Cut(const std::string &str, const std::vector<DagItem> &route, bool tone,
+           bool partial, std::vector<std::string> *ostrs) const;
 
+  std::string GetInitial(const std::string &s) const;
+
+  std::string RemoveTone(const std::string &s) const;
+
+  // Note: zh ch sh not included
+  // Treat y w as initials
+  std::string initials_ = "bpmfdtnlgkhjqxrzcsyw";
+  std::string phonetics_ = "āáǎàēéěèōóǒòīíǐìūúǔùǖǘǚǜńňǹm̄ḿm̀";
+  std::unordered_map<std::string, std::string> phonetics_map_ = {
+      {"ā", "a"}, {"á", "a"}, {"ǎ", "a"}, {"à", "a"},
+
+      {"ē", "e"}, {"é", "e"}, {"ě", "e"}, {"è", "e"},
+
+      {"ō", "o"}, {"ó", "o"}, {"ǒ", "o"}, {"ò", "o"},
+
+      {"ī", "i"}, {"í", "i"}, {"ǐ", "i"}, {"ì", "i"},
+
+      {"ū", "u"}, {"ú", "u"}, {"ǔ", "u"}, {"ù", "u"},
+
+      {"ǖ", "ü"}, {"ǘ", "ü"}, {"ǚ", "ü"}, {"ǜ", "ü"},
+
+      {"ń", "n"}, {"ň", "n"}, {"ǹ", "n"},
+
+      {"m̄", "m"}, {"ḿ", "m"}, {"m̀", "m"}};
   std::vector<std::string> tokens_;
   std::vector<float> scores_;
   std::vector<std::vector<std::string>> values_;

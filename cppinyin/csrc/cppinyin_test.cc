@@ -40,6 +40,30 @@ TEST(PinyinEncoder, TestEncode) {
     oss << piece << " ";
   }
   std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, true, true);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, false, false);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, false, true);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
 }
 
 } // namespace cppinyin
