@@ -52,27 +52,27 @@ void PybindCppinyin(py::module &m) {
       .def(
           "encode",
           [](PyClass &self, const std::string &str, bool tone,
-             bool split) -> py::object {
+             bool partial) -> py::object {
             std::vector<std::string> ostrs;
             {
               py::gil_scoped_release release;
-              self.Encode(str, &ostrs, tone, split);
+              self.Encode(str, &ostrs, tone, partial);
             }
             return py::cast(ostrs);
           },
-          py::arg("str"), py::arg("tone") = true, py::arg("split") = false)
+          py::arg("str"), py::arg("tone") = true, py::arg("partial") = false)
       .def(
           "encode",
           [](PyClass &self, const std::vector<std::string> &strs, bool tone,
-             bool split) -> py::object {
+             bool partial) -> py::object {
             std::vector<std::vector<std::string>> ostrs;
             {
               py::gil_scoped_release release;
-              self.Encode(strs, &ostrs, tone, split);
+              self.Encode(strs, &ostrs, tone, partial);
             }
             return py::cast(ostrs);
           },
-          py::arg("strs"), py::arg("tone") = true, py::arg("split") = false);
+          py::arg("strs"), py::arg("tone") = true, py::arg("partial") = false);
 }
 
 PYBIND11_MODULE(_cppinyin, m) {

@@ -1,1 +1,1 @@
-from _cppinyin import Encoder
+from .cppinyin import Encoder
