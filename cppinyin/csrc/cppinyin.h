@@ -22,6 +22,7 @@
 #include "cppinyin/csrc/cppinyin.h"
 #include "cppinyin/csrc/darts.h"
 #include "cppinyin/csrc/threadpool.h"
+#include <cstdlib>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -39,8 +40,10 @@ public:
   PinyinEncoder(const std::string &vocab_path,
                 int32_t num_threads = std::thread::hardware_concurrency()) {
     pool_ = std::make_unique<ThreadPool>(num_threads);
+
     Build(vocab_path);
   }
+
   PinyinEncoder(int32_t num_threads = std::thread::hardware_concurrency()) {
     pool_ = std::make_unique<ThreadPool>(num_threads);
   }
@@ -55,6 +58,10 @@ public:
   void Encode(const std::vector<std::string> &strs,
               std::vector<std::vector<std::string>> *ostrs, bool tone = true,
               bool partial = false) const;
+
+  void Load(const std::string &model_path);
+
+  void Save(const std::string &model_path) const;
 
 private:
   void LoadVocab(const std::string &vocab_path);
@@ -75,6 +82,9 @@ private:
   std::string GetInitial(const std::string &s) const;
 
   std::string RemoveTone(const std::string &s) const;
+
+  size_t SaveValues(const std::string &model_path) const;
+  size_t LoadValues(const std::string &model_path);
 
   // Note: zh ch sh not included
   // Treat y w as initials

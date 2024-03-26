@@ -27,7 +27,7 @@ class Encoder:
         Construct a cppinyin Encoder object.
         """
         if vocab is None:
-            ref = importlib_resources.files("cppinyin") / "resources/pinyin.txt"
+            ref = importlib_resources.files("cppinyin") / "resources/pinyin.raw"
             with importlib_resources.as_file(ref) as path:
                 vocab = str(path)
 

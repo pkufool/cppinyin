@@ -17,6 +17,8 @@
  */
 
 #include "cppinyin/csrc/cppinyin.h"
+#include "cppinyin/csrc/utils.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -50,6 +52,7 @@ void PinyinEncoder::Build(const std::string &vocab_path) {
   }
 
   da_.build(keys.size(), keys.data(), length.data(), values.data());
+  tokens_.clear();
 }
 
 void PinyinEncoder::GetDag(const std::string &str, DagType *dag) const {
@@ -57,14 +60,14 @@ void PinyinEncoder::GetDag(const std::string &str, DagType *dag) const {
   for (int32_t i = 0; i < str.size(); ++i) {
     int32_t MAX_HIT = str.size() - i;
     const char *query = str.data() + i;
-    std::vector<int32_t> results(MAX_HIT);
+    std::vector<Darts::DoubleArray::result_pair_type> results(MAX_HIT);
     std::size_t num_matches =
         da_.commonPrefixSearch(query, results.data(), MAX_HIT);
     std::vector<DagItem> items;
     for (int32_t j = 0; j < num_matches; ++j) {
-      int32_t idx = results[j];
-      std::string tmp = tokens_[idx];
-      items.push_back(std::make_tuple(scores_[idx], i + tmp.size(), idx));
+      int32_t idx = results[j].value;
+      int32_t length = results[j].length;
+      items.push_back(std::make_tuple(scores_[idx], i + length, idx));
     }
     (*dag)[i] = items;
   }
@@ -275,6 +278,60 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
   std::ostringstream oss;
   oss << s.substr(0, pos) << phone << s.substr(pos + len);
   return oss.str();
+}
+
+size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
+  std::ofstream of(model_path, std::ofstream::binary);
+  size_t offset = 0;
+  // Save scores_
+  offset += WriteUint32(of, scores_.size());
+  for (const auto score : scores_) {
+    offset += WriteFloat(of, score);
+  }
+  // Save values_
+  offset += WriteUint32(of, values_.size());
+  for (const auto &value : values_) {
+    offset += WriteUint32(of, value.size());
+    for (const auto &v : value) {
+      offset += WriteString(of, v);
+    }
+  }
+  of.close();
+  return offset;
+}
+
+size_t PinyinEncoder::LoadValues(const std::string &model_path) {
+  std::ifstream ifile(model_path, std::ifstream::binary);
+  size_t offset = 0;
+  uint32_t size;
+
+  offset += ReadUint32(ifile, &size);
+  scores_.resize(size);
+  for (uint32_t i = 0; i < size; ++i) {
+    offset += ReadFloat(ifile, &(scores_[i]));
+  }
+  offset += ReadUint32(ifile, &size);
+  values_.resize(size);
+  uint32_t sub_size;
+  for (uint32_t i = 0; i < size; ++i) {
+    offset += ReadUint32(ifile, &sub_size);
+    values_[i].resize(sub_size);
+    for (uint32_t j = 0; j < sub_size; ++j) {
+      offset += ReadString(ifile, &values_[i][j]);
+    }
+  }
+  ifile.close();
+  return offset;
+}
+
+void PinyinEncoder::Load(const std::string &model_path) {
+  size_t offset = LoadValues(model_path);
+  da_.open(model_path.c_str(), "rb", offset);
+}
+
+void PinyinEncoder::Save(const std::string &model_path) const {
+  size_t offset = SaveValues(model_path);
+  da_.save(model_path.c_str(), "ab", 0);
 }
 
 } // namespace cppinyin

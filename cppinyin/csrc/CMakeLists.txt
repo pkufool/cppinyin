@@ -1,5 +1,6 @@
 set(cppinyin_srcs
   cppinyin.cc
+  utils.cc
 )
 
 add_library(cppinyin_core ${cppinyin_srcs})

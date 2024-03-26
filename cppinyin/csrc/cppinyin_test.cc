@@ -18,6 +18,7 @@
 
 #include "gtest/gtest.h"
 
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -28,8 +29,65 @@
 namespace cppinyin {
 
 TEST(PinyinEncoder, TestEncode) {
-  std::string vocab_path = "data/pinyin.txt";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   PinyinEncoder processor(vocab_path);
+
+  std::string str = "我是中国 人我爱我的 love you 祖国";
+  std::vector<std::string> pieces;
+  processor.Encode(str, &pieces);
+
+  std::ostringstream oss;
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, true, true);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, false, false);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+
+  processor.Encode(str, &pieces, false, true);
+
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  std::cerr << oss.str() << std::endl;
+}
+
+TEST(PinyinEncoder, TestLoad) {
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
+  auto start = std::chrono::high_resolution_clock::now();
+  PinyinEncoder processor(vocab_path);
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::cout << "Build from text file : "
+            << static_cast<int32_t>(duration.count()) << std::endl;
+
+  processor.Save("cppinyin/python/cppinyin/resources/pinyin.dict");
+
+  start = std::chrono::high_resolution_clock::now();
+
+  processor.Load("cppinyin/python/cppinyin/resources/pinyin.dict");
+
+  stop = std::chrono::high_resolution_clock::now();
+  duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::cout << "Build from binary file : "
+            << static_cast<int32_t>(duration.count()) << std::endl;
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
   std::vector<std::string> pieces;
