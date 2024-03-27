@@ -8,8 +8,8 @@ on:
       - '.github/workflows/linux-macos.yaml'
       - 'CMakeLists.txt'
       - 'cmake/**'
-      - 'ssentencepiece/csrc/**'
-      - 'ssentencepiece/python/**'
+      - 'cppinyin/csrc/**'
+      - 'cppinyin/python/**'
   pull_request:
     branches:
       - master
@@ -17,8 +17,8 @@ on:
       - '.github/workflows/linux-macos.yaml'
       - 'CMakeLists.txt'
       - 'cmake/**'
-      - 'ssentencepiece/csrc/**'
-      - 'ssentencepiece/python/**'
+      - 'cppinyin/csrc/**'
+      - 'cppinyin/python/**'
 
 concurrency:
   group: linux-macos-${{ github.ref }}
@@ -34,7 +34,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
           cd build
           cmake -D CMAKE_BUILD_TYPE=Release ..
 
-      - name: Build simple sentencepiece for ubuntu
+      - name: Build cppinyin ubuntu
         shell: bash
         run: |
           cd build
