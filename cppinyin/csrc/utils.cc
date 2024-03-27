@@ -41,24 +41,17 @@ size_t WriteString(std::ofstream &ofile, const std::string &data) {
   return sizeof(uint32_t) + size;
 }
 
-std::string ValidateExt(const std::string &path) {
-  size_t pos = path.rfind(".");
-  std::string ext;
-  if (pos != std::string::npos) {
-    ext = path.substr(pos);
-  } else {
-    std::cerr << "The dict path MUST have a extension either raw or dict, no "
-                 "extension given."
-              << std::endl;
-    std::abort();
-  }
-  if (ext != "raw" && ext != "dict") {
-    std::cerr
-        << "The dict path MUST have a extension either raw or dict, given : "
-        << ext << std::endl;
-    std::abort();
-  }
-  return ext;
+std::string GetHeader() { return "__kcppinyinw__"; }
+
+bool IsBinaryDict(const std::string &path) {
+  std::ifstream ifile(path, std::ifstream::binary);
+
+  std::string header = GetHeader();
+  std::string value;
+  ReadString(ifile, &value);
+  ifile.close();
+
+  return value == header;
 }
 
 } // namespace cppinyin

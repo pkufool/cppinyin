@@ -21,12 +21,13 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <numeric>
 #include <sstream>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -230,7 +231,7 @@ void PinyinEncoder::LoadVocab(const std::string &vocab_path) {
                    "(seperate by space), "
                    "the first one is Chinese word/character, the second one is "
                    "score, the others are the corresponding pinyins given : "
-                << line.c_str();
+                << line.c_str() << std::endl;
       exit(-1);
     }
     values_.emplace_back(std::move(values));
@@ -283,6 +284,11 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
 size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
   std::ofstream of(model_path, std::ofstream::binary);
   size_t offset = 0;
+
+  // Write header
+  std::string header = GetHeader();
+  offset += WriteString(of, header);
+
   // Save scores_
   offset += WriteUint32(of, scores_.size());
   for (const auto score : scores_) {
@@ -304,6 +310,16 @@ size_t PinyinEncoder::LoadValues(const std::string &model_path) {
   std::ifstream ifile(model_path, std::ifstream::binary);
   size_t offset = 0;
   uint32_t size;
+
+  std::string header = GetHeader();
+  std::string value;
+  offset += ReadString(ifile, &value);
+
+  if (header != value) {
+    std::cerr << "The binary dict should have a header of " << header
+              << std::endl;
+    std::abort();
+  }
 
   offset += ReadUint32(ifile, &size);
   scores_.resize(size);

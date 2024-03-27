@@ -82,6 +82,7 @@ TEST(PinyinEncoder, TestLoad) {
   start = std::chrono::high_resolution_clock::now();
 
   processor.Load("cppinyin/python/cppinyin/resources/pinyin.dict");
+  processor.Load("cppinyin/python/cppinyin/resources/pinyin.raw");
 
   stop = std::chrono::high_resolution_clock::now();
   duration =

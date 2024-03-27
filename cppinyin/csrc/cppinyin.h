@@ -22,6 +22,7 @@
 #include "cppinyin/csrc/cppinyin.h"
 #include "cppinyin/csrc/darts.h"
 #include "cppinyin/csrc/threadpool.h"
+#include "cppinyin/csrc/utils.h"
 #include <cstdlib>
 #include <string>
 #include <tuple>
@@ -41,7 +42,11 @@ public:
                 int32_t num_threads = std::thread::hardware_concurrency()) {
     pool_ = std::make_unique<ThreadPool>(num_threads);
 
-    Build(vocab_path);
+    if (IsBinaryDict(vocab_path)) {
+      Load(vocab_path);
+    } else {
+      Build(vocab_path);
+    }
   }
 
   PinyinEncoder(int32_t num_threads = std::thread::hardware_concurrency()) {

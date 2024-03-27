@@ -17,6 +17,8 @@ size_t ReadString(std::ifstream &ifile, std::string *data);
 
 size_t WriteString(std::ofstream &ofile, const std::string &data);
 
-std::string ValidateExt(const std::string &path);
+std::string GetHeader();
+
+bool IsBinaryDict(const std::string &path);
 
 } // namespace cppinyin
