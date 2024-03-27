@@ -286,8 +286,7 @@ size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
   size_t offset = 0;
 
   // Write header
-  std::string header = GetHeader();
-  offset += WriteString(of, header);
+  offset += WriteHeader(of);
 
   // Save scores_
   offset += WriteUint32(of, scores_.size());
@@ -306,26 +305,18 @@ size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
   return offset;
 }
 
-size_t PinyinEncoder::LoadValues(const std::string &model_path) {
-  std::ifstream ifile(model_path, std::ifstream::binary);
+size_t PinyinEncoder::LoadValues(std::ifstream &ifile) {
   size_t offset = 0;
   uint32_t size;
 
-  std::string header = GetHeader();
-  std::string value;
-  offset += ReadString(ifile, &value);
-
-  if (header != value) {
-    std::cerr << "The binary dict should have a header of " << header
-              << std::endl;
-    std::abort();
-  }
-
+  // Load scores_
   offset += ReadUint32(ifile, &size);
   scores_.resize(size);
   for (uint32_t i = 0; i < size; ++i) {
     offset += ReadFloat(ifile, &(scores_[i]));
   }
+
+  // Load values_
   offset += ReadUint32(ifile, &size);
   values_.resize(size);
   uint32_t sub_size;
@@ -336,17 +327,27 @@ size_t PinyinEncoder::LoadValues(const std::string &model_path) {
       offset += ReadString(ifile, &values_[i][j]);
     }
   }
-  ifile.close();
   return offset;
 }
 
 void PinyinEncoder::Load(const std::string &model_path) {
-  size_t offset = LoadValues(model_path);
+  std::ifstream ifile(model_path, std::ifstream::binary);
+
+  std::string value;
+  ReadHeader(ifile, &value);
+
+  if (HEADER != value) {
+    ifile.close();
+    return Build(model_path);
+  }
+
+  size_t offset = LoadValues(ifile) + value.size();
+  ifile.close();
   da_.open(model_path.c_str(), "rb", offset);
 }
 
 void PinyinEncoder::Save(const std::string &model_path) const {
-  size_t offset = SaveValues(model_path);
+  SaveValues(model_path);
   da_.save(model_path.c_str(), "ab", 0);
 }
 

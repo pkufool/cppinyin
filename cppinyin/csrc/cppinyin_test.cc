@@ -29,65 +29,64 @@
 namespace cppinyin {
 
 TEST(PinyinEncoder, TestEncode) {
-  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.dict";
   PinyinEncoder processor(vocab_path);
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
-  std::vector<std::string> pieces;
-  processor.Encode(str, &pieces);
 
   std::ostringstream oss;
+  std::vector<std::string> pieces;
+
+  processor.Encode(str, &pieces);
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-  std::cerr << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(), "wǒ shì zhōng guó rén wǒ ài wǒ de love you zǔ guó ");
 
   processor.Encode(str, &pieces, true, true);
-
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-  std::cerr << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(),
+            "w ǒ sh ì zh ōng g uó r én w ǒ ài w ǒ d e love you z ǔ g uó ");
 
   processor.Encode(str, &pieces, false, false);
-
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-  std::cerr << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(), "wo shi zhong guo ren wo ai wo de love you zu guo ");
 
   processor.Encode(str, &pieces, false, true);
-
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-  std::cerr << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(),
+            "w o sh i zh ong g uo r en w o ai w o d e love you z u g uo ");
 }
 
-TEST(PinyinEncoder, TestLoad) {
+TEST(PinyinEncoder, TestSaveLoad) {
   std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   auto start = std::chrono::high_resolution_clock::now();
   PinyinEncoder processor(vocab_path);
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-  std::cout << "Build from text file : "
+  std::cerr << "Build from text file : "
             << static_cast<int32_t>(duration.count()) << std::endl;
 
-  processor.Save("cppinyin/python/cppinyin/resources/pinyin.dict");
+  processor.Save("/tmp/pinyin.dict");
 
   start = std::chrono::high_resolution_clock::now();
 
-  processor.Load("cppinyin/python/cppinyin/resources/pinyin.dict");
-  processor.Load("cppinyin/python/cppinyin/resources/pinyin.raw");
+  processor.Load("/tmp/pinyin.dict");
 
   stop = std::chrono::high_resolution_clock::now();
   duration =
       std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-  std::cout << "Build from binary file : "
+  std::cerr << "Build from binary file : "
             << static_cast<int32_t>(duration.count()) << std::endl;
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
@@ -98,31 +97,7 @@ TEST(PinyinEncoder, TestLoad) {
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-  std::cerr << oss.str() << std::endl;
-
-  processor.Encode(str, &pieces, true, true);
-
-  oss.str("");
-  for (auto piece : pieces) {
-    oss << piece << " ";
-  }
-  std::cerr << oss.str() << std::endl;
-
-  processor.Encode(str, &pieces, false, false);
-
-  oss.str("");
-  for (auto piece : pieces) {
-    oss << piece << " ";
-  }
-  std::cerr << oss.str() << std::endl;
-
-  processor.Encode(str, &pieces, false, true);
-
-  oss.str("");
-  for (auto piece : pieces) {
-    oss << piece << " ";
-  }
-  std::cerr << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(), "wǒ shì zhōng guó rén wǒ ài wǒ de love you zǔ guó ");
 }
 
 } // namespace cppinyin

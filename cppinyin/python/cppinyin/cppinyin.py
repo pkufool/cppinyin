@@ -27,7 +27,9 @@ class Encoder:
         Construct a cppinyin Encoder object.
         """
         if vocab is None:
-            ref = importlib_resources.files("cppinyin") / "resources/pinyin.raw"
+            ref = (
+                importlib_resources.files("cppinyin") / "resources/pinyin.dict"
+            )
             with importlib_resources.as_file(ref) as path:
                 vocab = str(path)
 
@@ -40,3 +42,9 @@ class Encoder:
         partial: bool = False,
     ):
         return self.encoder.encode(data, tone, partial)
+
+    def load(self, path: str):
+        self.encoder.load(path)
+
+    def save(self, path: str):
+        self.encoder.save(path)

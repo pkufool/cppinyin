@@ -42,11 +42,7 @@ public:
                 int32_t num_threads = std::thread::hardware_concurrency()) {
     pool_ = std::make_unique<ThreadPool>(num_threads);
 
-    if (IsBinaryDict(vocab_path)) {
-      Load(vocab_path);
-    } else {
-      Build(vocab_path);
-    }
+    Load(vocab_path);
   }
 
   PinyinEncoder(int32_t num_threads = std::thread::hardware_concurrency()) {
@@ -54,8 +50,6 @@ public:
   }
 
   ~PinyinEncoder() {}
-
-  void Build(const std::string &vocab_path);
 
   void Encode(const std::string &str, std::vector<std::string> *ostrs,
               bool tone = true, bool partial = false) const;
@@ -69,6 +63,8 @@ public:
   void Save(const std::string &model_path) const;
 
 private:
+  void Build(const std::string &vocab_path);
+
   void LoadVocab(const std::string &vocab_path);
 
   void EncodeBase(const std::string &str, std::vector<DagItem> *route) const;
@@ -89,7 +85,7 @@ private:
   std::string RemoveTone(const std::string &s) const;
 
   size_t SaveValues(const std::string &model_path) const;
-  size_t LoadValues(const std::string &model_path);
+  size_t LoadValues(std::ifstream &ifile);
 
   // Note: zh ch sh not included
   // Treat y w as initials

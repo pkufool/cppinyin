@@ -41,17 +41,17 @@ size_t WriteString(std::ofstream &ofile, const std::string &data) {
   return sizeof(uint32_t) + size;
 }
 
-std::string GetHeader() { return "__kcppinyinw__"; }
+size_t ReadHeader(std::ifstream &ifile, std::string *data) {
+  std::string header(HEADER);
+  data->resize(header.size());
+  ifile.read(const_cast<char *>(data->c_str()), header.size());
+  return header.size();
+}
 
-bool IsBinaryDict(const std::string &path) {
-  std::ifstream ifile(path, std::ifstream::binary);
-
-  std::string header = GetHeader();
-  std::string value;
-  ReadString(ifile, &value);
-  ifile.close();
-
-  return value == header;
+size_t WriteHeader(std::ofstream &ofile) {
+  std::string header(HEADER);
+  ofile.write(&header[0], header.size());
+  return header.size();
 }
 
 } // namespace cppinyin

@@ -44,9 +44,15 @@ void PybindCppinyin(py::module &m) {
           py::arg("num_threads") = std::thread::hardware_concurrency(),
           py::call_guard<py::gil_scoped_release>())
       .def(
-          "build",
+          "load",
           [](PyClass &self, const std::string &vocab_path) {
-            self.Build(vocab_path);
+            self.Load(vocab_path);
+          },
+          py::arg("vocab_path"), py::call_guard<py::gil_scoped_release>())
+      .def(
+          "save",
+          [](PyClass &self, const std::string &vocab_path) {
+            self.Save(vocab_path);
           },
           py::arg("vocab_path"), py::call_guard<py::gil_scoped_release>())
       .def(
