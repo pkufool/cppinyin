@@ -1,2 +1,0 @@
-*.raw filter=lfs diff=lfs merge=lfs -text
-*.dict filter=lfs diff=lfs merge=lfs -text

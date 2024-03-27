@@ -29,7 +29,7 @@
 namespace cppinyin {
 
 TEST(PinyinEncoder, TestEncode) {
-  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.dict";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   PinyinEncoder processor(vocab_path);
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
