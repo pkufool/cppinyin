@@ -24,6 +24,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      - name: Checkout LFS objects
+        run: git lfs pull
 
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions
@@ -44,6 +49,14 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ./wheelhouse/
+
+      - name: Build sdist
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: bash
+      run: |
+        python3 -m pip install --upgrade build
+        python3 -m build -s
+        ls -l dist/*
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
