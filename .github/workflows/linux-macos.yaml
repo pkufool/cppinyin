@@ -64,6 +64,11 @@ jobs:
           cd build
           make -j2
 
+      - name: Install requirements
+        shell: bash
+        run: |
+          python3 -m pip install importlib-resources
+
       - name: Run tests
         shell: bash
         run: |

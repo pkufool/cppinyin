@@ -14,6 +14,9 @@ version = "0.2"
 authors = [
   { name="Next-gen Kaldi development team", email="wkang@pku.edu.cn" },
 ]
+dependencies = [
+  "importlib-resources",
+]
 description="A simple and fast pinyin encoder and decoder."
 readme = "README.md"
 requires-python = ">=3.7"
