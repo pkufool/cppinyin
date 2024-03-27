@@ -22,7 +22,6 @@
 
 
 import unittest
-import numpy as np
 
 import cppinyin as cp
 
