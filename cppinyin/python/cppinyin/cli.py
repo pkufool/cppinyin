@@ -127,10 +127,10 @@ def build(output: Path, dict_path: Path, user_dict_path: Path):
     "--user-dict-path", type=Path, help="The path to user customized dict."
 )
 @click.option(
-    "--tone",
+    "--no-tone",
     is_flag=True,
     show_default=True,
-    default=True,
+    default=False,
     help="Whether to include tones in output pinyins or not.",
 )
 @click.option(
@@ -141,14 +141,34 @@ def build(output: Path, dict_path: Path, user_dict_path: Path):
     help="Whether to split pinyins into initials and finals or not.",
 )
 def encode(
-    input: str, dict_path: Path, user_dict_path: Path, tone: bool, partial: bool
+    input: str,
+    dict_path: Path,
+    user_dict_path: Path,
+    no_tone: bool,
+    partial: bool,
 ):
     """
     Encode a input Chinese sentence into pinyin sequences given dictionary
     (if not provided will use the default one) and user defined dictionary.
 
+    The input could be a string or a file path.
+
     Note:
       The user_dict has a higher priority than dict (also default dict).
     """
     encoder = Encoder(get_dict_path(dict_path, user_dict_path))
-    click.echo(encoder.encode(input, tone=tone, partial=partial))
+    if Path(input).is_file():
+        with open(input, "r") as fi:
+            for line in fi:
+                pinyin = " ".join(
+                    encoder.encode(
+                        line.strip(), tone=not no_tone, partial=partial
+                    )
+                )
+                click.echo(f"{line.strip()}\t{pinyin}")
+    else:
+        click.echo(
+            " ".join(
+                encoder.encode(input.strip(), tone=not no_tone, partial=partial)
+            )
+        )
