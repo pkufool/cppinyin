@@ -37,14 +37,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
-      - name: Checkout github repo (+ download lfs dependencies)
+      - name: Checkout github repo
         uses: actions/checkout@v2
         with:
-          lfs: true
           fetch-depth: 0
-
-      - name: Checkout LFS objects
-        run: git lfs pull
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2

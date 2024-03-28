@@ -21,13 +21,23 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout github repo (+ download lfs dependencies)
+      - name: Checkout github repo
         uses: actions/checkout@v2
         with:
-          lfs: true
+          fetch-depth: 0
 
-      - name: Checkout LFS objects
-        run: git lfs pull
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      # We remove bianry dict from repo, so need to re-generate one
+      # this is a workaround since we already version in pypi
+      - name: Build binary dict
+        shell: bash
+        run: |
+          python3 -m pip install cppinyin
+          python3 -c "import cppinyin; e = cppinyin.Encoder('cppinyin/python/cppinyin/resources/pinyin.raw'); e.save('cppinyin/python/cppinyin/resources/pinyin.dict');"
 
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions
