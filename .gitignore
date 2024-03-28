@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 pinyin.dict
+.cppinyin.tmp
 
 # C extensions
 *.so

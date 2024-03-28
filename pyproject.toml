@@ -16,6 +16,7 @@ authors = [
 ]
 dependencies = [
   "importlib-resources",
+  "click",
 ]
 description="A simple and fast pinyin encoder and decoder."
 readme = "README.md"
@@ -32,3 +33,6 @@ classifiers = [
 
 [tool.black]
 line-length = 80
+
+[project.scripts]
+cppinyin="cppinyin.cli:cli"
