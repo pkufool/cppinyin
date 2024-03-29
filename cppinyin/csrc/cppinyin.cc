@@ -262,6 +262,24 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
   std::string phonetic;
   std::size_t len;
   std::size_t pos = s.find_first_of(phonetics_);
+
+  // Handle m̄ : 0x6d 0xcc 0x7c and m̀ : 0x6d 0xcc 0x80
+  // m is 0x6d
+  const uint8_t *p = reinterpret_cast<const uint8_t *>(s.c_str());
+  if (p[pos] == 0x6d) {
+    if ((p[pos + 1] == 0xcc && p[pos + 2] == 0x7c) ||
+        (p[pos + 1] == 0xcc && p[pos + 2] == 0x80)) {
+      // do nothing
+    } else {
+      pos = s.find_first_of(phonetics_, pos + 1);
+    }
+  }
+
+  // Handle ü : 0xc3 0xbc not a phonetic
+  if (p[pos] == 0xc3 && p[pos + 1] == 0xbc) {
+    pos = s.find_first_of(phonetics_, pos + 1);
+  }
+
   if (pos == std::string::npos) {
     return s;
   } else {
@@ -274,6 +292,7 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
       phonetic = s.substr(pos, len);
     }
   }
+
   std::string phone = phonetics_map_.at(phonetic);
 
   std::ostringstream oss;
