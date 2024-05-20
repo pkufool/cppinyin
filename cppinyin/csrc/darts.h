@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdio>
 #include <exception>
+#include <iostream>
 #include <new>
 
 #define DARTS_VERSION "0.32"
@@ -253,6 +254,8 @@ public:
   // when and only when a memory allocation fails.
   int open(const char *file_name, const char *mode = "rb",
            std::size_t offset = 0, std::size_t size = 0);
+  int open(std::istream &is, std::size_t offset = 0, std::size_t size = 0);
+
   // save() writes the array of units into the specified file. `offset'
   // specifies the number of bytes to be skipped before writing the array.
   // open() returns 0 iff the operation succeeds. Otherwise, it returns a
@@ -408,6 +411,67 @@ int DoubleArrayImpl<A, B, T, C>::open(const char *file_name, const char *mode,
     }
   }
   std::fclose(file);
+
+  clear();
+
+  size_ = size;
+  array_ = buf;
+  buf_ = buf;
+  return 0;
+}
+
+template <typename A, typename B, typename T, typename C>
+int DoubleArrayImpl<A, B, T, C>::open(std::istream &is, std::size_t offset,
+                                      std::size_t size) {
+  if (size == 0) {
+    if (is.seekg(0, std::ios::end)) {
+      return -1;
+    }
+    size = is.tellg() - offset;
+  }
+
+  size /= unit_size();
+  if (size < 256 || (size & 0xFF) != 0) {
+    return -1;
+  }
+
+  if (is.seekg(offset, std::ios::beg)) {
+    return -1;
+  }
+
+  unit_type units[256];
+  if (is.read(reinterpret_cast<char *>(units), 256 * unit_size())) {
+    return -1;
+  }
+
+  if (units[0].label() != '\0' || units[0].has_leaf() ||
+      units[0].offset() == 0 || units[0].offset() >= 512) {
+    return -1;
+  }
+
+  for (id_type i = 1; i < 256; ++i) {
+    if (units[i].label() <= 0xFF && units[i].offset() >= size) {
+      return -1;
+    }
+  }
+
+  unit_type *buf;
+  try {
+    buf = new unit_type[size];
+    for (id_type i = 0; i < 256; ++i) {
+      buf[i] = units[i];
+    }
+  } catch (const std::bad_alloc &) {
+    DARTS_THROW("failed to open double-array: std::bad_alloc");
+  }
+
+  if (size > 256) {
+    if (is.read(reinterpret_cast<char *>(buf + 256),
+                (size - 256) * unit_size())) {
+      delete[] buf;
+      return -1;
+    }
+  }
 
   clear();
 

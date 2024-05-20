@@ -5,8 +5,12 @@ set(cppinyin_srcs
 
 add_library(cppinyin_core ${cppinyin_srcs})
 
-if (NOT WIN32)
-target_link_libraries(cppinyin_core pthread)
+if (NOT BUILD_SHARED_LIBS)
+  set_property(TARGET cppinyin_core PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif()
+
+if (NOT WIN32 AND (NOT DEFINED ANDROID_ABI))
+  target_link_libraries(cppinyin_core pthread)
 endif()
 
 install(TARGETS cppinyin_core DESTINATION ${CMAKE_INSTALL_PREFIX})

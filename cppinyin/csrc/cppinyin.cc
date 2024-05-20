@@ -33,8 +33,8 @@
 
 namespace cppinyin {
 
-void PinyinEncoder::Build(const std::string &vocab_path) {
-  LoadVocab(vocab_path);
+void PinyinEncoder::Build(std::istream &is) {
+  LoadVocab(is);
 
   std::vector<const char *> keys(tokens_.size());
   std::vector<size_t> length(tokens_.size());
@@ -204,12 +204,7 @@ void PinyinEncoder::Encode(const std::vector<std::string> &strs,
   }
 }
 
-void PinyinEncoder::LoadVocab(const std::string &vocab_path) {
-  std::ifstream is(vocab_path);
-  if (!is) {
-    std::cerr << "Open vocab file failed : " << vocab_path.c_str();
-    exit(-1);
-  }
+void PinyinEncoder::LoadVocab(std::istream &is) {
   tokens_.clear();
   scores_.clear();
   values_.clear();
@@ -324,7 +319,7 @@ size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
   return offset;
 }
 
-size_t PinyinEncoder::LoadValues(std::ifstream &ifile) {
+size_t PinyinEncoder::LoadValues(std::istream &ifile) {
   size_t offset = 0;
   uint32_t size;
 
@@ -351,18 +346,20 @@ size_t PinyinEncoder::LoadValues(std::ifstream &ifile) {
 
 void PinyinEncoder::Load(const std::string &model_path) {
   std::ifstream ifile(model_path, std::ifstream::binary);
+  Load(ifile);
+}
 
+void PinyinEncoder::Load(std::istream &is) {
   std::string value;
-  ReadHeader(ifile, &value);
+  ReadHeader(is, &value);
 
   if (HEADER != value) {
-    ifile.close();
-    return Build(model_path);
+    is.seekg(0, std::ios::beg);
+    return Build(is);
   }
 
-  size_t offset = LoadValues(ifile) + value.size();
-  ifile.close();
-  da_.open(model_path.c_str(), "rb", offset);
+  size_t offset = LoadValues(is) + value.size();
+  da_.open(is);
 }
 
 void PinyinEncoder::Save(const std::string &model_path) const {

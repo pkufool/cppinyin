@@ -6,7 +6,7 @@
 
 namespace cppinyin {
 
-size_t ReadUint32(std::ifstream &ifile, uint32_t *data) {
+size_t ReadUint32(std::istream &ifile, uint32_t *data) {
   ifile.read(reinterpret_cast<char *>(data), sizeof(uint32_t));
   return sizeof(uint32_t);
 }
@@ -16,7 +16,7 @@ size_t WriteUint32(std::ofstream &ofile, uint32_t data) {
   return sizeof(uint32_t);
 }
 
-size_t ReadFloat(std::ifstream &ifile, float *data) {
+size_t ReadFloat(std::istream &ifile, float *data) {
   ifile.read(reinterpret_cast<char *>(data), sizeof(float));
   return sizeof(float);
 }
@@ -26,7 +26,7 @@ size_t WriteFloat(std::ofstream &ofile, float data) {
   return sizeof(float);
 }
 
-size_t ReadString(std::ifstream &ifile, std::string *data) {
+size_t ReadString(std::istream &ifile, std::string *data) {
   uint32_t size;
   ifile.read(reinterpret_cast<char *>(&size), sizeof(uint32_t));
   data->resize(size);
@@ -41,7 +41,7 @@ size_t WriteString(std::ofstream &ofile, const std::string &data) {
   return sizeof(uint32_t) + size;
 }
 
-size_t ReadHeader(std::ifstream &ifile, std::string *data) {
+size_t ReadHeader(std::istream &ifile, std::string *data) {
   std::string header(HEADER);
   data->resize(header.size());
   ifile.read(const_cast<char *>(data->c_str()), header.size());
