@@ -427,7 +427,7 @@ int DoubleArrayImpl<A, B, T, C>::open(std::istream &is, std::size_t offset,
     if (is.seekg(0, std::ios::end)) {
       return -1;
     }
-    size = is.tellg() - offset;
+    size = static_cast<std::size_t>(is.tellg()) - offset;
   }
 
   size /= unit_size();
