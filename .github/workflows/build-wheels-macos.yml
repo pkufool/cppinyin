@@ -1,4 +1,4 @@
-name: build-wheels
+name: build-wheels-macos
 
 on:
   push:
