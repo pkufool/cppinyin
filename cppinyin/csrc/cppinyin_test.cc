@@ -68,6 +68,46 @@ TEST(PinyinEncoder, TestEncode) {
             "w o sh i zh ong g uo r en w o ai w o d e love you z u g uo ");
 }
 
+TEST(PinyinEncoder, TestEncodeBatch) {
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
+  PinyinEncoder processor(vocab_path);
+
+  std::vector<std::string> strs({"我是中国 人我爱我的 love you 祖国",
+                                 "love you 祖国 我是中国 人我爱我的"});
+
+  std::ostringstream oss;
+  std::vector<std::vector<std::string>> pieces;
+
+  processor.Encode(strs, &pieces);
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(), "wǒ shì zhōng guó rén wǒ ài wǒ de love you zǔ guó ");
+
+  processor.Encode(strs, &pieces, true, true);
+  oss.str("");
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "w ǒ sh ì zh ōng g uó r én w ǒ ài w ǒ d e love you z ǔ g uó ");
+
+  processor.Encode(strs, &pieces, false, false);
+  oss.str("");
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(), "wo shi zhong guo ren wo ai wo de love you zu guo ");
+
+  processor.Encode(strs, &pieces, false, true);
+  oss.str("");
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "w o sh i zh ong g uo r en w o ai w o d e love you z u g uo ");
+}
+
 TEST(PinyinEncoder, TestSaveLoad) {
   std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   auto start = std::chrono::high_resolution_clock::now();

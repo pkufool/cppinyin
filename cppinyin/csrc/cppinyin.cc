@@ -194,8 +194,8 @@ void PinyinEncoder::Encode(const std::vector<std::string> &strs,
   ostrs->resize(strs.size());
   std::vector<std::future<void>> results;
   for (int32_t i = 0; i < strs.size(); ++i) {
-    results.emplace_back(pool_->enqueue([this, i, &strs, ostrs] {
-      return this->Encode(strs[i], &((*ostrs)[i]));
+    results.emplace_back(pool_->enqueue([this, i, &strs, ostrs, tone, partial] {
+      return this->Encode(strs[i], &((*ostrs)[i]), tone, partial);
     }));
   }
 
