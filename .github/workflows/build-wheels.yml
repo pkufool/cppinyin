@@ -60,20 +60,20 @@ jobs:
           name: python-package-distributions-${{ matrix.os }}
           path: wheelhouse
 
-      - name: Build sdist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        shell: bash
-        run: |
-          python3 -m pip install --upgrade build
-          python3 -m build -s
-          ls -l dist/*
+            #- name: Build sdist
+            #  if: ${{ matrix.os == 'ubuntu-latest' }}
+            #  shell: bash
+            #  run: |
+            #    python3 -m pip install --upgrade build
+            #    python3 -m build -s
+            #    ls -l dist/*
 
-      - name: Store dist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist
+            #- name: Store dist
+            #  if: ${{ matrix.os == 'ubuntu-latest' }}
+            #  uses: actions/upload-artifact@v4
+            #  with:
+            #    name: python-package-distributions
+            #    path: dist
 
   deploy:
     name: Deploy to Pypi.
