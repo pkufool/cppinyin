@@ -57,7 +57,7 @@ jobs:
       - name: Store ${{ matrix.os }} binary wheel
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-${{ matrix.os }}
           path: wheelhouse
 
       - name: Build sdist
@@ -72,7 +72,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-dist
           path: dist
 
   deploy:
@@ -89,7 +89,7 @@ jobs:
       - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-*
           path: dist/
 
       - name: Publish package to PyPI
