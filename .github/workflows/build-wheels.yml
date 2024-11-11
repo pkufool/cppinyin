@@ -32,7 +32,7 @@ jobs:
           python-version: '3.10'
 
       # We remove bianry dict from repo, so need to re-generate one
-      # this is a workaround since we already version in pypi
+      # this is a workaround since we already has version in pypi
       - name: Build binary dict
         shell: bash
         run: |
@@ -55,7 +55,7 @@ jobs:
           ls -lh ./wheelhouse/*.whl
 
       - name: Store ${{ matrix.os }} binary wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: wheelhouse
@@ -70,7 +70,7 @@ jobs:
 
       - name: Store dist
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist
@@ -87,7 +87,7 @@ jobs:
 
     steps:
       - name: Download all the dists
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
