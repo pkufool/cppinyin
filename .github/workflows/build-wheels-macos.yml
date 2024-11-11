@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest]
 
     steps:
       - name: Checkout github repo
@@ -60,21 +60,6 @@ jobs:
           name: python-package-distributions
           path: wheelhouse
 
-      - name: Build sdist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        shell: bash
-        run: |
-          python3 -m pip install --upgrade build
-          python3 -m build -s
-          ls -l dist/*
-
-      - name: Store dist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist
-
   deploy:
     name: Deploy to Pypi.
     needs:
@@ -89,7 +74,7 @@ jobs:
       - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
-          pattern: python-package-distributions
+          pattern: python-package-distributions*
           path: dist/
 
       - name: Publish package to PyPI
