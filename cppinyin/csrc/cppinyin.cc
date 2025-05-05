@@ -33,6 +33,21 @@
 
 namespace cppinyin {
 
+std::string PinyinEncoder::ToInitial(const std::string &s) const {
+  return GetInitial(s);
+}
+void PinyinEncoder::ToInitials(const std::vector<std::string> &strs,
+                               std::vector<std::string> *ostrs) const {
+  ostrs->clear();
+  for (const auto &s : strs) {
+    ostrs->push_back(GetInitial(s));
+  }
+}
+
+std::string PinyinEncoder::ToFinal(const std::string &s) const {}
+void PinyinEncoder::ToFinals(const std::vector<std::string> &strs,
+                             std::vector<std::string> *ostrs) const {}
+
 void PinyinEncoder::Build(std::istream &is) {
   LoadVocab(is);
 

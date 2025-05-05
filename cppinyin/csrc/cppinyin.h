@@ -65,6 +65,14 @@ public:
               std::vector<std::vector<std::string>> *ostrs, bool tone = true,
               bool partial = false) const;
 
+  std::string ToInitial(const std::string &s) const;
+  void ToInitials(const std::vector<std::string> &strs,
+                  std::vector<std::string> *ostrs) const;
+
+  std::string ToFinal(const std::string &s) const;
+  void ToFinals(const std::vector<std::string> &strs,
+                std::vector<std::string> *ostrs) const;
+
   void Load(const std::string &model_path);
   void Load(std::istream &is);
 
