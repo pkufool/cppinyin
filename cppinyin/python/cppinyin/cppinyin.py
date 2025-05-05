@@ -40,8 +40,9 @@ class Encoder:
         data: Union[str, List[str]],
         tone: bool = True,
         partial: bool = False,
+        return_seg: bool = False,
     ):
-        return self.encoder.encode(data, tone, partial)
+        return self.encoder.encode(data, tone, partial, return_seg)
 
     def load(self, path: str):
         self.encoder.load(path)

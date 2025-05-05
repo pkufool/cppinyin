@@ -45,6 +45,7 @@ void PinyinEncoder::ToInitials(const std::vector<std::string> &strs,
 }
 
 std::string PinyinEncoder::ToFinal(const std::string &s) const {}
+
 void PinyinEncoder::ToFinals(const std::vector<std::string> &strs,
                              std::vector<std::string> *ostrs) const {}
 
@@ -121,8 +122,10 @@ void PinyinEncoder::CalcDp(const std::string &str, const DagType &dag,
 
 void PinyinEncoder::Cut(const std::string &str,
                         const std::vector<DagItem> &route, bool tone,
-                        bool partial, std::vector<std::string> *ostrs) const {
+                        bool partial, std::vector<std::string> *ostrs,
+                        std::vector<std::string> *segs) const {
   ostrs->clear();
+  segs->clear();
   int32_t i = 0;
   int32_t fail_bytes = 0;
   while (i < str.size()) {
@@ -133,6 +136,7 @@ void PinyinEncoder::Cut(const std::string &str,
     } else {
       if (fail_bytes != 0) {
         ostrs->emplace_back(str.substr(i - fail_bytes, fail_bytes));
+        segs->emplace_back(str.substr(i - fail_bytes, fail_bytes));
       }
       fail_bytes = 0;
       for (const auto &value : values_[std::get<2>(route[i])]) {
@@ -154,11 +158,13 @@ void PinyinEncoder::Cut(const std::string &str,
           }
         }
       }
+      segs->emplace_back(str.substr(i, next_index - i));
       i = next_index;
     }
   }
   if (fail_bytes != 0) {
     ostrs->emplace_back(str.substr(i - fail_bytes, fail_bytes));
+    segs->emplace_back(str.substr(i - fail_bytes, fail_bytes));
   }
 }
 
@@ -171,15 +177,17 @@ void PinyinEncoder::EncodeBase(const std::string &str,
 
 void PinyinEncoder::EncodeBase(const std::string &str,
                                std::vector<std::string> *ostrs, bool tone,
-                               bool partial) const {
+                               bool partial,
+                               std::vector<std::string> *segs) const {
   std::vector<DagItem> route;
   EncodeBase(str, &route);
-  Cut(str, route, tone, partial, ostrs);
+  Cut(str, route, tone, partial, ostrs, segs);
 }
 
 void PinyinEncoder::Encode(const std::string &str,
                            std::vector<std::string> *ostrs, bool tone /*=true*/,
-                           bool partial /*=false*/) const {
+                           bool partial /*=false*/,
+                           std::vector<std::string> *segs /*=nullptr*/) const {
   ostrs->clear();
   std::vector<std::string> substrs;
   std::string word;
@@ -188,11 +196,13 @@ void PinyinEncoder::Encode(const std::string &str,
     substrs.push_back(word);
   }
   std::vector<std::vector<std::string>> subostrs(substrs.size());
+  std::vector<std::vector<std::string>> subsegs(substrs.size());
   std::vector<std::future<void>> results;
   for (int32_t i = 0; i < subostrs.size(); ++i) {
     results.emplace_back(
-        pool_->enqueue([this, i, &substrs, &subostrs, tone, partial] {
-          return this->EncodeBase(substrs[i], &(subostrs[i]), tone, partial);
+        pool_->enqueue([this, i, &substrs, &subostrs, &subsegs, tone, partial] {
+          return this->EncodeBase(substrs[i], &(subostrs[i]), tone, partial,
+                                  &(subsegs[i]));
         }));
   }
   for (auto &&result : results) {
@@ -201,19 +211,35 @@ void PinyinEncoder::Encode(const std::string &str,
   for (int32_t i = 0; i < subostrs.size(); ++i) {
     ostrs->insert(ostrs->end(), subostrs[i].begin(), subostrs[i].end());
   }
+  if (segs != nullptr) {
+    segs->clear();
+    for (int32_t i = 0; i < subsegs.size(); ++i) {
+      segs->insert(segs->end(), subsegs[i].begin(), subsegs[i].end());
+    }
+  }
 }
 
-void PinyinEncoder::Encode(const std::vector<std::string> &strs,
-                           std::vector<std::vector<std::string>> *ostrs,
-                           bool tone /*=true*/, bool partial /*=false*/) const {
+void PinyinEncoder::Encode(
+    const std::vector<std::string> &strs,
+    std::vector<std::vector<std::string>> *ostrs, bool tone /*=true*/,
+    bool partial /*=false*/,
+    std::vector<std::vector<std::string>> *segs /*=nullptr*/) const {
   ostrs->resize(strs.size());
+  if (segs != nullptr) {
+    segs->resize(strs.size());
+  }
   std::vector<std::future<void>> results;
   for (int32_t i = 0; i < strs.size(); ++i) {
-    results.emplace_back(pool_->enqueue([this, i, &strs, ostrs, tone, partial] {
-      return this->Encode(strs[i], &((*ostrs)[i]), tone, partial);
+    results.emplace_back(pool_->enqueue([this, i, &strs, ostrs, tone, partial,
+                                         segs] {
+      if (segs != nullptr) {
+        return this->Encode(strs[i], &((*ostrs)[i]), tone, partial,
+                            &((*segs)[i]));
+      } else {
+        return this->Encode(strs[i], &((*ostrs)[i]), tone, partial, nullptr);
+      }
     }));
   }
-
   for (auto &&result : results) {
     result.get();
   }
@@ -269,6 +295,12 @@ std::string PinyinEncoder::GetInitial(const std::string &s) const {
 }
 
 std::string PinyinEncoder::RemoveTone(const std::string &s) const {
+  if (std::isdigit(s.back())) {
+    return s.substr(0, s.size() - 1);
+  } else {
+    return s;
+  }
+
   std::string phonetic;
   std::size_t len;
   std::size_t pos = s.find_first_of(phonetics_);

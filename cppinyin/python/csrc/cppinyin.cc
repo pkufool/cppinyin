@@ -57,28 +57,40 @@ void PybindCppinyin(py::module &m) {
           py::arg("vocab_path"), py::call_guard<py::gil_scoped_release>())
       .def(
           "encode",
-          [](PyClass &self, const std::string &str, bool tone,
-             bool partial) -> py::object {
+          [](PyClass &self, const std::string &str, bool tone, bool partial,
+             bool return_seg) -> py::object {
             std::vector<std::string> ostrs;
+            std::vector<std::string> osegs;
             {
               py::gil_scoped_release release;
-              self.Encode(str, &ostrs, tone, partial);
+              self.Encode(str, &ostrs, tone, partial, &osegs);
             }
-            return py::cast(ostrs);
+            if (return_seg) {
+              return py::make_tuple(py::cast(ostrs), py::cast(osegs));
+            } else {
+              return py::cast(ostrs);
+            }
           },
-          py::arg("str"), py::arg("tone") = true, py::arg("partial") = false)
+          py::arg("str"), py::arg("tone") = true, py::arg("partial") = false,
+          py::arg("return_seg") = false)
       .def(
           "encode",
           [](PyClass &self, const std::vector<std::string> &strs, bool tone,
-             bool partial) -> py::object {
+             bool partial, bool return_seg) -> py::object {
             std::vector<std::vector<std::string>> ostrs;
+            std::vector<std::vector<std::string>> osegs;
             {
               py::gil_scoped_release release;
-              self.Encode(strs, &ostrs, tone, partial);
+              self.Encode(strs, &ostrs, tone, partial, &osegs);
             }
-            return py::cast(ostrs);
+            if (return_seg) {
+              return py::make_tuple(py::cast(ostrs), py::cast(osegs));
+            } else {
+              return py::cast(ostrs);
+            }
           },
-          py::arg("strs"), py::arg("tone") = true, py::arg("partial") = false);
+          py::arg("strs"), py::arg("tone") = true, py::arg("partial") = false,
+          py::arg("return_seg") = false);
 }
 
 PYBIND11_MODULE(_cppinyin, m) {
