@@ -1,6 +1,7 @@
 #ifndef CPPINYIN_CSRC_UTILS_H_
 #define CPPINYIN_CSRC_UTILS_H_
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <string>
