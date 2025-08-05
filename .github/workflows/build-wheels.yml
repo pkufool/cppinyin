@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-22.04, windows-2022, macos-13]
 
     steps:
       - name: Checkout github repo
@@ -42,7 +42,7 @@ jobs:
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.5
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_SKIP: "cp27-* cp35-* cp36-* *-win32 pp* *-musllinux* *-manylinux_i686"
           CIBW_BUILD_VERBOSITY: 3
@@ -52,47 +52,31 @@ jobs:
         run: |
           ls -lh ./wheelhouse/
 
-          ls -lh ./wheelhouse/*.whl
+      - name: Publish wheels to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel twine==6.0.1 setuptools
 
-      - name: Store ${{ matrix.os }} binary wheel
-        uses: actions/upload-artifact@v3
-        with:
-          name: python-package-distributions
-          path: wheelhouse
+          twine upload ./wheelhouse/*.whl
 
       - name: Build sdist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         shell: bash
         run: |
           python3 -m pip install --upgrade build
           python3 -m build -s
           ls -l dist/*
 
-      - name: Store dist
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: python-package-distributions
-          path: dist
+      - name: Publish sdist to PyPI
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel twine==6.0.1 setuptools
 
-  deploy:
-    name: Deploy to Pypi.
-    needs:
-      - build_wheels
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    strategy:
-      fail-fast: false
-
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v3
-        with:
-          pattern: python-package-distributions
-          path: dist/
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          verbose: true
+          twine upload dist/cppinyin-*.tar.gz

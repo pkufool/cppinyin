@@ -188,16 +188,10 @@ void PinyinEncoder::Encode(const std::string &str,
     substrs.push_back(word);
   }
   std::vector<std::vector<std::string>> subostrs(substrs.size());
-  std::vector<std::future<void>> results;
   for (int32_t i = 0; i < subostrs.size(); ++i) {
-    results.emplace_back(
-        pool_->enqueue([this, i, &substrs, &subostrs, tone, partial] {
-          return this->EncodeBase(substrs[i], &(subostrs[i]), tone, partial);
-        }));
+    EncodeBase(substrs[i], &(subostrs[i]), tone, partial);
   }
-  for (auto &&result : results) {
-    result.get();
-  }
+
   for (int32_t i = 0; i < subostrs.size(); ++i) {
     ostrs->insert(ostrs->end(), subostrs[i].begin(), subostrs[i].end());
   }
