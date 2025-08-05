@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           python3 -m pip install cppinyin
-          python3 -c "import cppinyin; e = cppinyin.Encoder('cppinyin/python/cppinyin/resources/pinyin.raw'); e.save('cppinyin/python/cppinyin/resources/pinyin.dict');"
+          python3 -c "import cppinyin; import os; e = cppinyin.Encoder('cppinyin/python/cppinyin/resources/pinyin.raw'); e.save('cppinyin/python/cppinyin/resources/pinyin.dict'); os.remove('cppinyin/python/cppinyin/resources/pinyin.raw')"
 
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions

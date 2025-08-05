@@ -1,4 +1,5 @@
 #include "cppinyin/csrc/utils.h"
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
