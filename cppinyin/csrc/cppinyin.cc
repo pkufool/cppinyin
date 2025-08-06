@@ -368,7 +368,7 @@ void PinyinEncoder::Load(std::istream &is) {
   }
 
   size_t offset = LoadValues(is) + value.size();
-  da_.open(is);
+  da_.open(is, offset);
 }
 
 void PinyinEncoder::Save(const std::string &model_path) const {

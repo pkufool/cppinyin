@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -D CMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DCPPINYIN_ENABLE_TESTS=ON ..
 
       - name: Build cppinyin ubuntu
         shell: bash
