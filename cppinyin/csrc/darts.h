@@ -424,7 +424,7 @@ template <typename A, typename B, typename T, typename C>
 int DoubleArrayImpl<A, B, T, C>::open(std::istream &is, std::size_t offset,
                                       std::size_t size) {
   if (size == 0) {
-    if (is.seekg(0, std::ios::end)) {
+    if (!is.seekg(0, std::ios::end)) {
       return -1;
     }
     size = static_cast<std::size_t>(is.tellg()) - offset;
@@ -435,12 +435,12 @@ int DoubleArrayImpl<A, B, T, C>::open(std::istream &is, std::size_t offset,
     return -1;
   }
 
-  if (is.seekg(offset, std::ios::beg)) {
+  if (!is.seekg(offset, std::ios::beg)) {
     return -1;
   }
 
   unit_type units[256];
-  if (is.read(reinterpret_cast<char *>(units), 256 * unit_size())) {
+  if (!is.read(reinterpret_cast<char *>(units), 256 * unit_size())) {
     return -1;
   }
 
@@ -466,8 +466,8 @@ int DoubleArrayImpl<A, B, T, C>::open(std::istream &is, std::size_t offset,
   }
 
   if (size > 256) {
-    if (is.read(reinterpret_cast<char *>(buf + 256),
-                (size - 256) * unit_size())) {
+    if (!is.read(reinterpret_cast<char *>(buf + 256),
+                 (size - 256) * unit_size())) {
       delete[] buf;
       return -1;
     }

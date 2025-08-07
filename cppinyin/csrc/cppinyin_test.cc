@@ -131,18 +131,18 @@ TEST(PinyinEncoder, TestEncodeBatch) {
 TEST(PinyinEncoder, TestSaveLoad) {
   std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin_v1.txt";
   auto start = std::chrono::high_resolution_clock::now();
-  PinyinEncoder processor(vocab_path);
+  PinyinEncoder processor_t(vocab_path);
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
   std::cerr << "Build from text file : "
             << static_cast<int32_t>(duration.count()) << std::endl;
 
-  processor.Save("/tmp/pinyin.dict");
+  processor_t.Save("/tmp/pinyin.dict");
 
   start = std::chrono::high_resolution_clock::now();
 
-  processor.Load("/tmp/pinyin.dict");
+  PinyinEncoder processor_b("/tmp/pinyin.dict");
 
   stop = std::chrono::high_resolution_clock::now();
   duration =
@@ -152,7 +152,7 @@ TEST(PinyinEncoder, TestSaveLoad) {
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
   std::vector<std::string> pieces;
-  processor.Encode(str, &pieces);
+  processor_b.Encode(str, &pieces);
 
   std::ostringstream oss;
   for (auto piece : pieces) {

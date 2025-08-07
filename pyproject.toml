@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cppinyin"
-version = "0.6"
+version = "0.8"
 authors = [
   { name="Next-gen Kaldi development team", email="wkang@pku.edu.cn" },
 ]

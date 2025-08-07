@@ -200,6 +200,7 @@ void PinyinEncoder::Encode(const std::string &str,
   for (int32_t i = 0; i < subostrs.size(); ++i) {
     EncodeBase(substrs[i], &(subostrs[i]), tone, partial, &(subsegs[i]));
   }
+
   for (int32_t i = 0; i < subostrs.size(); ++i) {
     ostrs->insert(ostrs->end(), subostrs[i].begin(), subostrs[i].end());
   }
@@ -398,7 +399,7 @@ void PinyinEncoder::Load(std::istream &is) {
   }
 
   size_t offset = LoadValues(is) + value.size();
-  da_.open(is);
+  da_.open(is, offset);
 }
 
 void PinyinEncoder::Save(const std::string &model_path) const {
