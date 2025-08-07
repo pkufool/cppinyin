@@ -33,21 +33,16 @@
 
 namespace cppinyin {
 
-std::string PinyinEncoder::ToInitial(const std::string &s) const {
-  return GetInitial(s);
-}
-void PinyinEncoder::ToInitials(const std::vector<std::string> &strs,
-                               std::vector<std::string> *ostrs) const {
-  ostrs->clear();
-  for (const auto &s : strs) {
-    ostrs->push_back(GetInitial(s));
+void PinyinEncoder::Init(int32_t num_threads) {
+  if (num_threads <= 0) {
+    num_threads = std::thread::hardware_concurrency();
+  }
+  pool_ = std::make_unique<ThreadPool>(num_threads);
+  tone_to_normal_.reserve(NORMAL_TO_TONE.size());
+  for (const auto &item : NORMAL_TO_TONE) {
+    tone_to_normal_[item.second] = item.first;
   }
 }
-
-std::string PinyinEncoder::ToFinal(const std::string &s) const {}
-
-void PinyinEncoder::ToFinals(const std::vector<std::string> &strs,
-                             std::vector<std::string> *ostrs) const {}
 
 void PinyinEncoder::Build(std::istream &is) {
   LoadVocab(is);
@@ -253,6 +248,15 @@ void PinyinEncoder::LoadVocab(std::istream &is) {
     scores_.push_back(score);
     std::vector<std::string> values;
     while (iss >> value) {
+      // Always convert to tone in internal
+      if (!std::isdigit(value.back())) {
+        if (NORMAL_TO_TONE.find(value) == NORMAL_TO_TONE.end()) {
+          std::cerr << "PinyinEncoder: " << value
+                    << " is not in the NORMAL_TO_TONE map. " << std::endl;
+        } else {
+          value = NORMAL_TO_TONE.at(value);
+        }
+      }
       values.push_back(value);
     }
     if (values.empty()) {
@@ -268,9 +272,9 @@ void PinyinEncoder::LoadVocab(std::istream &is) {
 }
 
 std::string PinyinEncoder::GetInitial(const std::string &s) const {
-  std::size_t pos = s.find_first_of(initials_);
+  std::size_t pos = s.find_first_of(INITIALS);
   if (pos == 0) {
-    std::size_t npos = s.find_first_not_of(initials_, 1);
+    std::size_t npos = s.find_first_not_of(INITIALS, 1);
     if (npos == std::string::npos) {
       return s.substr(0);
     } else {
@@ -296,7 +300,7 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
 
   std::string phonetic;
   std::size_t len;
-  std::size_t pos = s.find_first_of(phonetics_);
+  std::size_t pos = s.find_first_of(PHONETICS);
 
   // Handle m̄ : 0x6d 0xcc 0x7c and m̀ : 0x6d 0xcc 0x80
   // m is 0x6d
@@ -306,19 +310,19 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
         (p[pos + 1] == 0xcc && p[pos + 2] == 0x80)) {
       // do nothing
     } else {
-      pos = s.find_first_of(phonetics_, pos + 1);
+      pos = s.find_first_of(PHONETICS, pos + 1);
     }
   }
 
   // Handle ü : 0xc3 0xbc not a phonetic
   if (p[pos] == 0xc3 && p[pos + 1] == 0xbc) {
-    pos = s.find_first_of(phonetics_, pos + 1);
+    pos = s.find_first_of(PHONETICS, pos + 1);
   }
 
   if (pos == std::string::npos) {
     return s;
   } else {
-    std::size_t npos = s.find_first_not_of(phonetics_, pos + 1);
+    std::size_t npos = s.find_first_not_of(PHONETICS, pos + 1);
     if (npos == std::string::npos) {
       phonetic = s.substr(pos);
       len = s.size() - pos;
@@ -328,11 +332,37 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
     }
   }
 
-  std::string phone = phonetics_map_.at(phonetic);
+  std::string phone = PHONETICS_MAP.at(phonetic);
 
   std::ostringstream oss;
   oss << s.substr(0, pos) << phone << s.substr(pos + len);
   return oss.str();
+}
+
+std::string PinyinEncoder::ToInitial(const std::string &s) const {
+  return GetInitial(s);
+}
+
+void PinyinEncoder::ToInitials(const std::vector<std::string> &strs,
+                               std::vector<std::string> *ostrs) const {
+  ostrs->clear();
+  for (const auto &s : strs) {
+    ostrs->push_back(GetInitial(s));
+  }
+}
+
+std::string PinyinEncoder::ToFinal(const std::string &s) const {
+  auto initial = GetInitial(s);
+  auto final_t = s.substr(initial.size());
+  return final_t;
+}
+
+void PinyinEncoder::ToFinals(const std::vector<std::string> &strs,
+                             std::vector<std::string> *ostrs) const {
+  ostrs->clear();
+  for (const auto &s : strs) {
+    ostrs->push_back(ToFinal(s));
+  }
 }
 
 size_t PinyinEncoder::SaveValues(const std::string &model_path) const {
@@ -374,11 +404,22 @@ size_t PinyinEncoder::LoadValues(std::istream &ifile) {
   offset += ReadUint32(ifile, &size);
   values_.resize(size);
   uint32_t sub_size;
+  std::string value;
   for (uint32_t i = 0; i < size; ++i) {
     offset += ReadUint32(ifile, &sub_size);
     values_[i].resize(sub_size);
     for (uint32_t j = 0; j < sub_size; ++j) {
-      offset += ReadString(ifile, &values_[i][j]);
+      offset += ReadString(ifile, &value);
+      // Always convert to tone in internal
+      if (!std::isdigit(value.back())) {
+        if (NORMAL_TO_TONE.find(value) == NORMAL_TO_TONE.end()) {
+          std::cerr << "PinyinEncoder: " << value
+                    << " is not in the NORMAL_TO_TONE map. " << std::endl;
+        } else {
+          value = NORMAL_TO_TONE.at(value);
+        }
+      }
+      values_[i][j] = value;
     }
   }
   return offset;

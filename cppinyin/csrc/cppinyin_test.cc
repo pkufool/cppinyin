@@ -44,7 +44,7 @@ TEST(PinyinEncoder, TestEncode) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
-            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de5 love you zu3 guo2 ");
+            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 
   processor.Encode(str, &pieces, true, true, &segs);
   oss.str("");
@@ -54,7 +54,7 @@ TEST(PinyinEncoder, TestEncode) {
 
   EXPECT_EQ(
       oss.str(),
-      "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e5 love you z u3 g uo2 ");
+      "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e love you z u3 g uo2 ");
 
   oss.str("");
   for (auto seg : segs) {
@@ -94,7 +94,7 @@ TEST(PinyinEncoder, TestEncodeBatch) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
-            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de5 love you zu3 guo2 ");
+            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 
   processor.Encode(strs, &pieces, true, true, &segs);
   oss.str("");
@@ -104,7 +104,7 @@ TEST(PinyinEncoder, TestEncodeBatch) {
 
   EXPECT_EQ(
       oss.str(),
-      "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e5 love you z u3 g uo2 ");
+      "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e love you z u3 g uo2 ");
 
   oss.str("");
   for (auto piece : segs[1]) {
@@ -126,6 +126,23 @@ TEST(PinyinEncoder, TestEncodeBatch) {
   }
   EXPECT_EQ(oss.str(),
             "w o sh i zh ong g uo r en w o ai w o d e love you z u g uo ");
+}
+
+TEST(PinyinEncoder, TestLoadFromNormal) {
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
+  PinyinEncoder processor(vocab_path);
+
+  std::string str = "我是中国 人我爱我的 love you 祖国";
+
+  std::ostringstream oss;
+  std::vector<std::string> pieces;
+
+  processor.Encode(str, &pieces);
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 }
 
 TEST(PinyinEncoder, TestSaveLoad) {
@@ -159,7 +176,7 @@ TEST(PinyinEncoder, TestSaveLoad) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
-            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de5 love you zu3 guo2 ");
+            "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 }
 
 } // namespace cppinyin
