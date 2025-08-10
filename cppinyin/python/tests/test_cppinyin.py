@@ -32,7 +32,7 @@ class TestEncode(unittest.TestCase):
         phrases = ["一切反动派都是纸老虎", "宜将剩勇追穷寇不可沽名学霸王", "我是中国人民的儿子"]
         pinyins = [
             "yi1 qie4 fan3 dong4 pai4 dou1 shi4 zhi3 lao3 hu3",
-            "yi2 jiang1 sheng4 yong3 zhui1 qiong2 kou4 bu4 ke3 gu1 ming2 xve2 ba4 wang2",
+            "yi2 jiang1 sheng4 yong3 zhui1 qiong2 kou4 bu4 ke3 gu1 ming2 xue2 ba4 wang2",
             "wo3 shi4 zhong1 guo2 ren2 min2 de er2 zi5",
         ]
         for i, p in enumerate(phrases):
