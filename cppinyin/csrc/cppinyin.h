@@ -60,21 +60,23 @@ public:
   ~PinyinEncoder() {}
 
   void Encode(const std::string &str, std::vector<std::string> *ostrs,
-              bool tone = true, bool partial = false,
+              const std::string &tone = "number", bool partial = false,
               std::vector<std::string> *segs = nullptr) const;
 
   void Encode(const std::vector<std::string> &strs,
-              std::vector<std::vector<std::string>> *ostrs, bool tone = true,
-              bool partial = false,
+              std::vector<std::vector<std::string>> *ostrs,
+              const std::string &tone = "number", bool partial = false,
               std::vector<std::vector<std::string>> *segs = nullptr) const;
 
   std::string ToInitial(const std::string &s) const;
   void ToInitials(const std::vector<std::string> &strs,
                   std::vector<std::string> *ostrs) const;
 
-  std::string ToFinal(const std::string &s) const;
+  std::string ToFinal(const std::string &s,
+                      const std::string &tone = "number") const;
   void ToFinals(const std::vector<std::string> &strs,
-                std::vector<std::string> *ostrs) const;
+                std::vector<std::string> *ostrs,
+                const std::string &tone = "number") const;
 
   void Load(const std::string &model_path);
   void Load(std::istream &is);
@@ -91,7 +93,7 @@ private:
   void EncodeBase(const std::string &str, std::vector<DagItem> *route) const;
 
   void EncodeBase(const std::string &str, std::vector<std::string> *ostrs,
-                  bool tone, bool partial,
+                  const std::string &tone, bool partial,
                   std::vector<std::string> *segs) const;
 
   void GetDag(const std::string &str, DagType *dag) const;
@@ -99,8 +101,9 @@ private:
   void CalcDp(const std::string &str, const DagType &dag,
               std::vector<DagItem> *route) const;
 
-  void Cut(const std::string &str, const std::vector<DagItem> &route, bool tone,
-           bool partial, std::vector<std::string> *ostrs,
+  void Cut(const std::string &str, const std::vector<DagItem> &route,
+           const std::string &tone, bool partial,
+           std::vector<std::string> *ostrs,
            std::vector<std::string> *segs) const;
 
   std::string GetInitial(const std::string &s) const;

@@ -116,8 +116,9 @@ void PinyinEncoder::CalcDp(const std::string &str, const DagType &dag,
 }
 
 void PinyinEncoder::Cut(const std::string &str,
-                        const std::vector<DagItem> &route, bool tone,
-                        bool partial, std::vector<std::string> *ostrs,
+                        const std::vector<DagItem> &route,
+                        const std::string &tone, bool partial,
+                        std::vector<std::string> *ostrs,
                         std::vector<std::string> *segs) const {
   ostrs->clear();
   segs->clear();
@@ -135,10 +136,19 @@ void PinyinEncoder::Cut(const std::string &str,
       }
       fail_bytes = 0;
       for (const auto &value : values_[std::get<2>(route[i])]) {
+        auto value_t = value;
+        if (tone == "normal") {
+          if (tone_to_normal_.find(value) != tone_to_normal_.end()) {
+            value_t = tone_to_normal_.at(value);
+          } else {
+            std::cerr << "PinyinEncoder: " << value
+                      << " is not in the NORMAL_TO_TONE map. " << std::endl;
+          }
+        }
         if (partial) {
-          auto initial = GetInitial(value);
-          auto final_t = value.substr(initial.size());
-          if (!tone) {
+          auto initial = GetInitial(value_t);
+          auto final_t = value_t.substr(initial.size());
+          if (tone == "none") {
             final_t = RemoveTone(final_t);
           }
           if (!initial.empty()) {
@@ -146,10 +156,10 @@ void PinyinEncoder::Cut(const std::string &str,
           }
           ostrs->push_back(final_t);
         } else {
-          if (!tone) {
-            ostrs->push_back(RemoveTone(value));
+          if (tone == "none") {
+            ostrs->push_back(RemoveTone(value_t));
           } else {
-            ostrs->push_back(value);
+            ostrs->push_back(value_t);
           }
         }
       }
@@ -171,8 +181,8 @@ void PinyinEncoder::EncodeBase(const std::string &str,
 }
 
 void PinyinEncoder::EncodeBase(const std::string &str,
-                               std::vector<std::string> *ostrs, bool tone,
-                               bool partial,
+                               std::vector<std::string> *ostrs,
+                               const std::string &tone, bool partial,
                                std::vector<std::string> *segs) const {
   std::vector<DagItem> route;
   EncodeBase(str, &route);
@@ -180,9 +190,12 @@ void PinyinEncoder::EncodeBase(const std::string &str,
 }
 
 void PinyinEncoder::Encode(const std::string &str,
-                           std::vector<std::string> *ostrs, bool tone /*=true*/,
+                           std::vector<std::string> *ostrs,
+                           const std::string &tone /*=number*/,
                            bool partial /*=false*/,
                            std::vector<std::string> *segs /*=nullptr*/) const {
+  CPY_ASSERT(tone == "number" || tone == "none" || tone == "normal",
+             "tone should be one of 'number', 'none' and 'normal'");
   ostrs->clear();
   std::vector<std::string> substrs;
   std::string word;
@@ -209,9 +222,11 @@ void PinyinEncoder::Encode(const std::string &str,
 
 void PinyinEncoder::Encode(
     const std::vector<std::string> &strs,
-    std::vector<std::vector<std::string>> *ostrs, bool tone /*=true*/,
-    bool partial /*=false*/,
+    std::vector<std::vector<std::string>> *ostrs,
+    const std::string &tone /*=number*/, bool partial /*=false*/,
     std::vector<std::vector<std::string>> *segs /*=nullptr*/) const {
+  CPY_ASSERT(tone == "number" || tone == "none" || tone == "normal",
+             "tone should be one of 'number', 'none' and 'normal'");
   ostrs->resize(strs.size());
   if (segs != nullptr) {
     segs->resize(strs.size());
@@ -340,6 +355,13 @@ std::string PinyinEncoder::RemoveTone(const std::string &s) const {
 }
 
 std::string PinyinEncoder::ToInitial(const std::string &s) const {
+  if (s.empty()) {
+    return s;
+  }
+  if (tone_to_normal_.count(s) == 0 && NORMAL_TO_TONE.count(s) == 0) {
+    std::cerr << "ToInitial: " << s << " is not a valid pinyin. " << std::endl;
+    return std::string();
+  }
   return GetInitial(s);
 }
 
@@ -347,21 +369,48 @@ void PinyinEncoder::ToInitials(const std::vector<std::string> &strs,
                                std::vector<std::string> *ostrs) const {
   ostrs->clear();
   for (const auto &s : strs) {
-    ostrs->push_back(GetInitial(s));
+    ostrs->push_back(ToInitial(s));
   }
 }
 
-std::string PinyinEncoder::ToFinal(const std::string &s) const {
-  auto initial = GetInitial(s);
-  auto final_t = s.substr(initial.size());
+std::string PinyinEncoder::ToFinal(const std::string &s,
+                                   const std::string &tone /*=number*/) const {
+  CPY_ASSERT(tone == "number" || tone == "none" || tone == "normal",
+             "tone should be one of 'number', 'none' and 'normal'");
+  if (s.empty()) {
+    return s;
+  }
+  std::string value;
+  if (tone_to_normal_.find(s) != tone_to_normal_.end()) {
+    value = s;
+  } else if (NORMAL_TO_TONE.find(s) != NORMAL_TO_TONE.end()) {
+    value = NORMAL_TO_TONE.at(s);
+  } else {
+    std::cerr << "ToFinal: " << s << " is not a valid pinyin. " << std::endl;
+    return std::string();
+  }
+  if (tone == "none") {
+    value = RemoveTone(value);
+  } else if (tone == "normal") {
+    value = tone_to_normal_.at(value);
+  } else {
+    // tone == "number"
+    // Do nothing, value is already in number tone
+  }
+  auto initial = GetInitial(value);
+  auto final_t = value.substr(initial.size());
   return final_t;
 }
 
 void PinyinEncoder::ToFinals(const std::vector<std::string> &strs,
-                             std::vector<std::string> *ostrs) const {
+                             std::vector<std::string> *ostrs,
+                             const std::string &tone /*=number*/
+) const {
+  CPY_ASSERT(tone == "number" || tone == "none" || tone == "normal",
+             "tone should be one of 'number', 'none' and 'normal'");
   ostrs->clear();
   for (const auto &s : strs) {
-    ostrs->push_back(ToFinal(s));
+    ostrs->push_back(ToFinal(s, tone));
   }
 }
 
@@ -410,7 +459,7 @@ size_t PinyinEncoder::LoadValues(std::istream &ifile) {
     values_[i].resize(sub_size);
     for (uint32_t j = 0; j < sub_size; ++j) {
       offset += ReadString(ifile, &value);
-      // Always convert to tone in internal
+      // Always convert to number tone in internal
       if (!std::isdigit(value.back())) {
         if (NORMAL_TO_TONE.find(value) == NORMAL_TO_TONE.end()) {
           std::cerr << "PinyinEncoder: " << value

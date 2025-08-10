@@ -30,46 +30,54 @@
 namespace cppinyin {
 
 TEST(PinyinEncoder, TestEncode) {
-  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin_v1.txt";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   PinyinEncoder processor(vocab_path);
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
 
   std::ostringstream oss;
   std::vector<std::string> pieces;
-  std::vector<std::string> segs;
 
-  processor.Encode(str, &pieces);
+  processor.Encode(str, &pieces, "number", false);
+  oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
             "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 
-  processor.Encode(str, &pieces, true, true, &segs);
+  processor.Encode(str, &pieces, "number", true);
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
-
   EXPECT_EQ(
       oss.str(),
       "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e love you z u3 g uo2 ");
 
+  processor.Encode(str, &pieces, "normal", false);
   oss.str("");
-  for (auto seg : segs) {
-    oss << seg << " ";
+  for (auto piece : pieces) {
+    oss << piece << " ";
   }
-  std::cout << oss.str() << std::endl;
+  EXPECT_EQ(oss.str(), "wǒ shì zhōng guó rén wǒ ài wǒ de love you zǔ guó ");
 
-  processor.Encode(str, &pieces, false, false);
+  processor.Encode(str, &pieces, "normal", true);
+  oss.str("");
+  for (auto piece : pieces) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "w ǒ sh ì zh ōng g uó r én w ǒ ài w ǒ d e love you z ǔ g uó ");
+
+  processor.Encode(str, &pieces, "none", false);
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(), "wo shi zhong guo ren wo ai wo de love you zu guo ");
 
-  processor.Encode(str, &pieces, false, true);
+  processor.Encode(str, &pieces, "none", true);
   oss.str("");
   for (auto piece : pieces) {
     oss << piece << " ";
@@ -79,7 +87,7 @@ TEST(PinyinEncoder, TestEncode) {
 }
 
 TEST(PinyinEncoder, TestEncodeBatch) {
-  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin_v1.txt";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   PinyinEncoder processor(vocab_path);
 
   std::vector<std::string> strs({"我是中国 人我爱我的 love you 祖国",
@@ -87,45 +95,91 @@ TEST(PinyinEncoder, TestEncodeBatch) {
 
   std::ostringstream oss;
   std::vector<std::vector<std::string>> pieces;
-  std::vector<std::vector<std::string>> segs;
 
-  processor.Encode(strs, &pieces);
+  processor.Encode(strs, &pieces, "number", false);
+  oss.str("");
   for (auto piece : pieces[0]) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
             "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
+  oss.str("");
+  for (auto piece : pieces[1]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "love you zu3 guo2 wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de ");
 
-  processor.Encode(strs, &pieces, true, true, &segs);
+  processor.Encode(strs, &pieces, "number", true);
   oss.str("");
   for (auto piece : pieces[0]) {
     oss << piece << " ";
   }
-
   EXPECT_EQ(
       oss.str(),
       "w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e love you z u3 g uo2 ");
-
   oss.str("");
-  for (auto piece : segs[1]) {
+  for (auto piece : pieces[1]) {
     oss << piece << " ";
   }
-  std::cout << oss.str() << std::endl;
+  EXPECT_EQ(
+      oss.str(),
+      "love you z u3 g uo2 w o3 sh i4 zh ong1 g uo2 r en2 w o3 ai4 w o3 d e ");
 
-  processor.Encode(strs, &pieces, false, false);
+  processor.Encode(strs, &pieces, "normal", false);
+  oss.str("");
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(), "wǒ shì zhōng guó rén wǒ ài wǒ de love you zǔ guó ");
+
+  oss.str("");
+  for (auto piece : pieces[1]) {
+    oss << piece << " ";
+  }
+
+  EXPECT_EQ(oss.str(), "love you zǔ guó wǒ shì zhōng guó rén wǒ ài wǒ de ");
+
+  processor.Encode(strs, &pieces, "normal", true);
+  oss.str("");
+  for (auto piece : pieces[0]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "w ǒ sh ì zh ōng g uó r én w ǒ ài w ǒ d e love you z ǔ g uó ");
+  oss.str("");
+  for (auto piece : pieces[1]) {
+    oss << piece << " ";
+  }
+
+  EXPECT_EQ(oss.str(),
+            "love you z ǔ g uó w ǒ sh ì zh ōng g uó r én w ǒ ài w ǒ d e ");
+
+  processor.Encode(strs, &pieces, "none", false);
   oss.str("");
   for (auto piece : pieces[0]) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(), "wo shi zhong guo ren wo ai wo de love you zu guo ");
+  oss.str("");
+  for (auto piece : pieces[1]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(), "love you zu guo wo shi zhong guo ren wo ai wo de ");
 
-  processor.Encode(strs, &pieces, false, true);
+  processor.Encode(strs, &pieces, "none", true);
   oss.str("");
   for (auto piece : pieces[0]) {
     oss << piece << " ";
   }
   EXPECT_EQ(oss.str(),
             "w o sh i zh ong g uo r en w o ai w o d e love you z u g uo ");
+  oss.str("");
+  for (auto piece : pieces[1]) {
+    oss << piece << " ";
+  }
+  EXPECT_EQ(oss.str(),
+            "love you z u g uo w o sh i zh ong g uo r en w o ai w o d e ");
 }
 
 TEST(PinyinEncoder, TestLoadFromNormal) {
@@ -137,7 +191,7 @@ TEST(PinyinEncoder, TestLoadFromNormal) {
   std::ostringstream oss;
   std::vector<std::string> pieces;
 
-  processor.Encode(str, &pieces);
+  processor.Encode(str, &pieces, "number");
   for (auto piece : pieces) {
     oss << piece << " ";
   }
@@ -145,8 +199,68 @@ TEST(PinyinEncoder, TestLoadFromNormal) {
             "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 }
 
+TEST(PinyinEncoder, TestToInitialToFinal) {
+  PinyinEncoder processor;
+  std::vector<std::string> pinyins = {"wǒ",  "shì", "zhōng", "guó", "rén",
+                                      "wǒ",  "ài",  "wǒ",    "de",  "love",
+                                      "you", "zǔ",  "guó"};
+  std::vector<std::string> pinyin_numbers = {
+      "wo3", "shi4", "zhong1", "guo2", "ren2", "wo3", "ai4",
+      "wo3", "de",   "love",   "you",  "zu3",  "guo2"};
+  std::vector<std::string> initials = {"w", "sh", "zh", "g", "r", "w", "",
+                                       "w", "d",  "",   "",  "z", "g"};
+  std::vector<std::string> finals = {"ǒ", "ì", "ōng", "uó", "én", "ǒ", "ài",
+                                     "ǒ", "e", "",    "",   "ǔ",  "uó"};
+  std::vector<std::string> finals_numbers = {"o3", "i4",  "ong1", "uo2", "en2",
+                                             "o3", "ai4", "o3",   "e",   "",
+                                             "",   "u3",  "uo2"};
+  std::vector<std::string> finals_none = {
+      "o", "i", "ong", "uo", "en", "o", "ai", "o", "e", "", "", "u", "uo"};
+
+  std::vector<std::string> res;
+  processor.ToInitials(pinyins, &res);
+  for (int32_t i = 0; i < initials.size(); ++i) {
+    EXPECT_EQ(res[i], initials[i]);
+  }
+
+  processor.ToInitials(pinyin_numbers, &res);
+  for (int32_t i = 0; i < initials.size(); ++i) {
+    EXPECT_EQ(res[i], initials[i]);
+  }
+
+  processor.ToFinals(pinyins, &res, "normal");
+  for (int32_t i = 0; i < finals.size(); ++i) {
+    EXPECT_EQ(res[i], finals[i]);
+  }
+
+  processor.ToFinals(pinyin_numbers, &res, "normal");
+  for (int32_t i = 0; i < finals.size(); ++i) {
+    EXPECT_EQ(res[i], finals[i]);
+  }
+
+  processor.ToFinals(pinyins, &res, "number");
+  for (int32_t i = 0; i < finals_numbers.size(); ++i) {
+    EXPECT_EQ(res[i], finals_numbers[i]);
+  }
+
+  processor.ToFinals(pinyin_numbers, &res, "number");
+  for (int32_t i = 0; i < finals_numbers.size(); ++i) {
+    EXPECT_EQ(res[i], finals_numbers[i]);
+  }
+
+  processor.ToFinals(pinyins, &res, "none");
+  for (int32_t i = 0; i < finals_none.size(); ++i) {
+    EXPECT_EQ(res[i], finals_none[i]);
+  }
+
+  processor.ToFinals(pinyin_numbers, &res, "none");
+  for (int32_t i = 0; i < finals_none.size(); ++i) {
+    EXPECT_EQ(res[i], finals_none[i]);
+  }
+}
+
 TEST(PinyinEncoder, TestSaveLoad) {
-  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin_v1.txt";
+  std::string vocab_path = "cppinyin/python/cppinyin/resources/pinyin.raw";
   auto start = std::chrono::high_resolution_clock::now();
   PinyinEncoder processor_t(vocab_path);
   auto stop = std::chrono::high_resolution_clock::now();
@@ -169,7 +283,7 @@ TEST(PinyinEncoder, TestSaveLoad) {
 
   std::string str = "我是中国 人我爱我的 love you 祖国";
   std::vector<std::string> pieces;
-  processor_b.Encode(str, &pieces);
+  processor_b.Encode(str, &pieces, "number");
 
   std::ostringstream oss;
   for (auto piece : pieces) {

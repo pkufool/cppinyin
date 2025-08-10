@@ -28,7 +28,7 @@ import cppinyin as cp
 
 class TestEncode(unittest.TestCase):
     def test_encode_decode(self):
-        cpp = cp.Encoder("../cppinyin/resources/pinyin_v1.txt")
+        cpp = cp.Encoder("../cppinyin/resources/pinyin.raw")
         phrases = ["一切反动派都是纸老虎", "宜将剩勇追穷寇不可沽名学霸王", "我是中国人民的儿子"]
         pinyins = [
             "yi1 qie4 fan3 dong4 pai4 dou1 shi4 zhi3 lao3 hu3",

@@ -57,8 +57,8 @@ void PybindCppinyin(py::module &m) {
           py::arg("vocab_path"), py::call_guard<py::gil_scoped_release>())
       .def(
           "encode",
-          [](PyClass &self, const std::string &str, bool tone, bool partial,
-             bool return_seg) -> py::object {
+          [](PyClass &self, const std::string &str, const std::string &tone,
+             bool partial, bool return_seg) -> py::object {
             std::vector<std::string> ostrs;
             std::vector<std::string> osegs;
             {
@@ -71,12 +71,13 @@ void PybindCppinyin(py::module &m) {
               return py::cast(ostrs);
             }
           },
-          py::arg("str"), py::arg("tone") = true, py::arg("partial") = false,
-          py::arg("return_seg") = false)
+          py::arg("str"), py::arg("tone") = "number",
+          py::arg("partial") = false, py::arg("return_seg") = false)
       .def(
           "encode",
-          [](PyClass &self, const std::vector<std::string> &strs, bool tone,
-             bool partial, bool return_seg) -> py::object {
+          [](PyClass &self, const std::vector<std::string> &strs,
+             const std::string &tone, bool partial,
+             bool return_seg) -> py::object {
             std::vector<std::vector<std::string>> ostrs;
             std::vector<std::vector<std::string>> osegs;
             {
@@ -89,8 +90,43 @@ void PybindCppinyin(py::module &m) {
               return py::cast(ostrs);
             }
           },
-          py::arg("strs"), py::arg("tone") = true, py::arg("partial") = false,
-          py::arg("return_seg") = false);
+          py::arg("strs"), py::arg("tone") = "number",
+          py::arg("partial") = false, py::arg("return_seg") = false)
+      .def(
+          "to_initials",
+          [](PyClass &self, const std::string &str) -> std::string {
+            py::gil_scoped_release release;
+            return self.ToInitial(str);
+          },
+          py::arg("str"))
+      .def(
+          "to_initials",
+          [](PyClass &self,
+             const std::vector<std::string> &strs) -> std::vector<std::string> {
+            std::vector<std::string> ostrs;
+            py::gil_scoped_release release;
+            self.ToInitials(strs, &ostrs);
+            return ostrs;
+          },
+          py::arg("strs"))
+      .def(
+          "to_final",
+          [](PyClass &self, const std::string &str,
+             const std::string &tone = "number") -> std::string {
+            py::gil_scoped_release release;
+            return self.ToFinal(str, tone);
+          },
+          py::arg("str"), py::arg("tone") = "number")
+      .def(
+          "to_finals",
+          [](PyClass &self, const std::vector<std::string> &strs,
+             const std::string &tone = "number") -> std::vector<std::string> {
+            std::vector<std::string> ostrs;
+            py::gil_scoped_release release;
+            self.ToFinals(strs, &ostrs, tone);
+            return ostrs;
+          },
+          py::arg("strs"), py::arg("tone") = "number");
 }
 
 PYBIND11_MODULE(_cppinyin, m) {

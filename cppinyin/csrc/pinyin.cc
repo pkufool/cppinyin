@@ -334,6 +334,7 @@ const std::unordered_map<std::string, std::string> NORMAL_TO_TONE = {
     {"ěn", "en3"},
     {"èn", "en4"},
     {"ēng", "eng1"},
+    {"er", "er"},
     {"ēr", "er1"},
     {"ér", "er2"},
     {"ěr", "er3"},
