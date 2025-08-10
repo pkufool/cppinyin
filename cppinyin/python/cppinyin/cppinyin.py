@@ -38,7 +38,7 @@ class Encoder:
     def encode(
         self,
         data: Union[str, List[str]],
-        tone: str = "normal",
+        tone: str = "number",
         partial: bool = False,
         return_seg: bool = False,
     ):
@@ -50,11 +50,11 @@ class Encoder:
         """
         return self.encoder.to_initials(data)
 
-    def to_finals(self, data: Union[str, List[str]]):
+    def to_finals(self, data: Union[str, List[str]], tone: str = "number"):
         """
         Convert Chinese characters to their finals.
         """
-        return self.encoder.to_finals(data)
+        return self.encoder.to_finals(data, tone)
 
     def load(self, path: str):
         self.encoder.load(path)
