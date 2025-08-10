@@ -1,5 +1,6 @@
 set(cppinyin_srcs
   cppinyin.cc
+  pinyin.cc
   utils.cc
 )
 

@@ -38,10 +38,23 @@ class Encoder:
     def encode(
         self,
         data: Union[str, List[str]],
-        tone: bool = True,
+        tone: str = "number",
         partial: bool = False,
+        return_seg: bool = False,
     ):
-        return self.encoder.encode(data, tone, partial)
+        return self.encoder.encode(data, tone, partial, return_seg)
+
+    def to_initials(self, data: Union[str, List[str]]):
+        """
+        Convert Chinese characters to their initials.
+        """
+        return self.encoder.to_initials(data)
+
+    def to_finals(self, data: Union[str, List[str]], tone: str = "number"):
+        """
+        Convert Chinese characters to their finals.
+        """
+        return self.encoder.to_finals(data, tone)
 
     def load(self, path: str):
         self.encoder.load(path)

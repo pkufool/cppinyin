@@ -31,16 +31,21 @@ class TestEncode(unittest.TestCase):
         cpp = cp.Encoder("../cppinyin/resources/pinyin.raw")
         phrases = ["一切反动派都是纸老虎", "宜将剩勇追穷寇不可沽名学霸王", "我是中国人民的儿子"]
         pinyins = [
-            "yī qiè fǎn dòng pài dōu shì zhǐ lǎo hǔ",
-            "yí jiāng shèng yǒng zhuī qióng kòu bù kě gū míng xué bà wáng",
-            "wǒ shì zhōng guó rén mín de ér zi",
+            "yi1 qie4 fan3 dong4 pai4 dou1 shi4 zhi3 lao3 hu3",
+            "yi2 jiang1 sheng4 yong3 zhui1 qiong2 kou4 bu4 ke3 gu1 ming2 xue2 ba4 wang2",
+            "wo3 shi4 zhong1 guo2 ren2 min2 de er2 zi",
         ]
         for i, p in enumerate(phrases):
-            res = " ".join(cpp.encode(p))
+            res, seg = cpp.encode(p, return_seg=True)
+            res = " ".join(res)
+            seg = " ".join(seg)
             print(res)
+            print(seg)
             assert res == pinyins[i], (res, pinyins[i])
-        res = cpp.encode(phrases)
+        res, seg = cpp.encode(phrases, return_seg=True)
         res = [" ".join(x) for x in res]
+        print(res)
+        print(seg)
         assert pinyins == res, (pinyins, res)
 
 

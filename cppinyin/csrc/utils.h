@@ -9,6 +9,17 @@
 
 namespace cppinyin {
 
+#define CPY_ASSERT(cond, msg)                                                  \
+  do {                                                                         \
+    if (!(cond)) {                                                             \
+      std::cerr << "Assertion failed: " << #cond << "\n"                       \
+                << "Message: " << msg << "\n"                                  \
+                << "File: " << __FILE__ << ", Line: " << __LINE__              \
+                << std::endl;                                                  \
+      std::abort();                                                            \
+    }                                                                          \
+  } while (0)
+
 constexpr auto HEADER = "__kcppinyinw__";
 
 size_t ReadUint32(std::istream &ifile, uint32_t *data);
