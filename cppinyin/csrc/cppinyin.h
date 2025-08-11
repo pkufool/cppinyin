@@ -29,6 +29,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -58,6 +59,15 @@ public:
   }
 
   ~PinyinEncoder() {}
+
+  std::vector<std::string> AllPinyin(const std::string &tone = "number",
+                                     bool partial = false) const;
+
+  std::vector<std::string> AllInitials() const;
+
+  std::vector<std::string> AllFinals(const std::string &tone = "number") const;
+
+  bool ValidPinyin(const std::string &s, const std::string &tone = "") const;
 
   void Encode(const std::string &str, std::vector<std::string> *ostrs,
               const std::string &tone = "number", bool partial = false,
@@ -114,6 +124,7 @@ private:
   size_t LoadValues(std::istream &ifile);
 
   std::unordered_map<std::string, std::string> tone_to_normal_;
+  std::unordered_set<std::string> no_tone_set_;
   std::vector<std::string> tokens_;
   std::vector<float> scores_;
   std::vector<std::vector<std::string>> values_;

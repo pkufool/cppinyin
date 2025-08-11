@@ -56,6 +56,18 @@ class Encoder:
         """
         return self.encoder.to_finals(data, tone)
 
+    def all_pinyins(self, tone: str = "number"):
+        return self.encoder.all_pinyins(tone)
+
+    def all_initials(self):
+        return self.encoder.all_initials()
+
+    def all_finals(self, tone: str = "number"):
+        return self.encoder.all_finals(tone)
+
+    def valid_pinyin(self, pinyin: str, tone: str = ""):
+        return self.encoder.valid_pinyin(pinyin, tone)
+
     def load(self, path: str):
         self.encoder.load(path)
 

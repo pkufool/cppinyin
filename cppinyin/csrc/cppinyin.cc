@@ -26,9 +26,12 @@
 #include <iostream>
 #include <limits>
 #include <numeric>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace cppinyin {
@@ -41,6 +44,98 @@ void PinyinEncoder::Init(int32_t num_threads) {
   tone_to_normal_.reserve(NORMAL_TO_TONE.size());
   for (const auto &item : NORMAL_TO_TONE) {
     tone_to_normal_[item.second] = item.first;
+    auto value = RemoveNumberTone(item.second);
+    no_tone_set_.insert(value);
+  }
+}
+
+std::vector<std::string>
+PinyinEncoder::AllPinyin(const std::string &tone /*=number*/,
+                         bool partial /*=false*/) const {
+
+  std::vector<std::string> pinyins;
+  if (partial) {
+    auto initials = AllInitials();
+    for (const auto &initial : initials) {
+      pinyins.push_back(initial);
+    }
+    auto finals = AllFinals(tone);
+    for (const auto &final : finals) {
+      pinyins.push_back(final);
+    }
+    return pinyins;
+  }
+  if (tone == "none") {
+    for (const auto &value : no_tone_set_) {
+      pinyins.push_back(value);
+    }
+  } else if (tone == "normal") {
+    for (const auto &item : NORMAL_TO_TONE) {
+      pinyins.push_back(item.first);
+    }
+  } else if (tone == "number") {
+    for (const auto &item : NORMAL_TO_TONE) {
+      pinyins.push_back(item.second);
+    }
+  } else {
+    std::cerr << "PinyinEncoder: Invalid tone type: " << tone << std::endl;
+    std::abort();
+  }
+  std::sort(pinyins.begin(), pinyins.end());
+  return pinyins;
+}
+
+std::vector<std::string> PinyinEncoder::AllInitials() const {
+  std::set<std::string> initial_set;
+  for (const auto &item : NORMAL_TO_TONE) {
+    auto initial = GetInitial(item.first);
+    if (!initial.empty()) {
+      initial_set.insert(initial);
+    }
+  }
+  std::vector<std::string> initials;
+  initials.reserve(initial_set.size());
+  for (const auto &initial : initial_set) {
+    initials.push_back(initial);
+  }
+  return initials;
+}
+
+std::vector<std::string>
+PinyinEncoder::AllFinals(const std::string &tone /*=number*/) const {
+  auto pinyins = AllPinyin(tone, false);
+
+  std::set<std::string> finals_set;
+  for (const auto &value : pinyins) {
+    auto initial = GetInitial(value);
+    auto final_t = value.substr(initial.size());
+    if (!final_t.empty()) {
+      finals_set.insert(final_t);
+    }
+  }
+
+  std::vector<std::string> finals;
+  finals.reserve(finals_set.size());
+  for (const auto &value : finals_set) {
+    finals.push_back(value);
+  }
+  return finals;
+}
+
+bool PinyinEncoder::ValidPinyin(const std::string &s,
+                                const std::string &tone /*=number*/) const {
+  if (tone == "none") {
+    return no_tone_set_.find(s) != no_tone_set_.end();
+  } else if (tone == "normal") {
+    return NORMAL_TO_TONE.find(s) != NORMAL_TO_TONE.end();
+  } else if (tone == "number") {
+    return tone_to_normal_.find(s) != tone_to_normal_.end();
+  } else {
+    CPY_ASSERT(tone.empty(),
+               "tone should be empty of one of 'number', 'none' and 'normal'");
+    return no_tone_set_.find(s) != no_tone_set_.end() ||
+           NORMAL_TO_TONE.find(s) != NORMAL_TO_TONE.end() ||
+           tone_to_normal_.find(s) != tone_to_normal_.end();
   }
 }
 
@@ -307,11 +402,7 @@ std::string PinyinEncoder::GetInitial(const std::string &s) const {
 }
 
 std::string PinyinEncoder::RemoveTone(const std::string &s) const {
-  if (std::isdigit(s.back())) {
-    return s.substr(0, s.size() - 1);
-  } else {
-    return s;
-  }
+  return RemoveNumberTone(s);
 
   std::string phonetic;
   std::size_t len;

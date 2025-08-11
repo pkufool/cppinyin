@@ -7,6 +7,14 @@
 
 namespace cppinyin {
 
+std::string RemoveNumberTone(const std::string &s) {
+  if (std::isdigit(s.back())) {
+    return s.substr(0, s.size() - 1);
+  } else {
+    return s;
+  }
+}
+
 size_t ReadUint32(std::istream &ifile, uint32_t *data) {
   ifile.read(reinterpret_cast<char *>(data), sizeof(uint32_t));
   return sizeof(uint32_t);

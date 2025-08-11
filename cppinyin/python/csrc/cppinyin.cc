@@ -126,7 +126,41 @@ void PybindCppinyin(py::module &m) {
             self.ToFinals(strs, &ostrs, tone);
             return ostrs;
           },
-          py::arg("strs"), py::arg("tone") = "number");
+          py::arg("strs"), py::arg("tone") = "number")
+      .def(
+          "valid_pinyin",
+          [](PyClass &self, const std::string &str,
+             const std::string &tone = "number") -> bool {
+            py::gil_scoped_release release;
+            bool res = self.ValidPinyin(str, tone);
+            return res;
+          },
+          py::arg("str"), py::arg("tone") = "number")
+
+      .def(
+          "all_pinyins",
+          [](PyClass &self, const std::string &tone = "number",
+             bool partial = false) -> std::vector<std::string> {
+            py::gil_scoped_release release;
+            std::vector<std::string> ostrs = self.AllPinyin(tone, partial);
+            return ostrs;
+          },
+          py::arg("tone") = "number", py::arg("partial") = false)
+      .def("all_initials",
+           [](PyClass &self) -> std::vector<std::string> {
+             py::gil_scoped_release release;
+             std::vector<std::string> ostrs = self.AllInitials();
+             return ostrs;
+           })
+      .def(
+          "all_finals",
+          [](PyClass &self,
+             const std::string &tone = "number") -> std::vector<std::string> {
+            py::gil_scoped_release release;
+            std::vector<std::string> ostrs = self.AllFinals(tone);
+            return ostrs;
+          },
+          py::arg("tone") = "number");
 }
 
 PYBIND11_MODULE(_cppinyin, m) {

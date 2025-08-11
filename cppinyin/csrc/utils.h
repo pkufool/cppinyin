@@ -38,6 +38,8 @@ size_t ReadHeader(std::istream &ifile, std::string *data);
 
 size_t WriteHeader(std::ofstream &ofile);
 
+std::string RemoveNumberTone(const std::string &s);
+
 } // namespace cppinyin
 
 #endif // CPPINYIN_CSRC_UTILS_H_

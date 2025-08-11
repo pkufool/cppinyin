@@ -293,4 +293,127 @@ TEST(PinyinEncoder, TestSaveLoad) {
             "wo3 shi4 zhong1 guo2 ren2 wo3 ai4 wo3 de love you zu3 guo2 ");
 }
 
+TEST(PinyinEncoder, TestAllPinyin) {
+  PinyinEncoder processor;
+  std::ostringstream oss;
+  auto pinyins = processor.AllPinyin("number", false);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyins in number tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllPinyin("normal", false);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyins in normal tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllPinyin("none", false);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyins in none tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllPinyin("number", true);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All partial pinyins in number tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllPinyin("normal", true);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All partial pinyins in normal tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllPinyin("none", true);
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All partial pinyins in none tone: " << oss.str() << std::endl;
+}
+
+TEST(PinyinEncoder, TestAllInitialFinals) {
+  PinyinEncoder processor;
+  std::ostringstream oss;
+  auto pinyins = processor.AllInitials();
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyin initials: " << oss.str() << std::endl;
+
+  pinyins = processor.AllFinals("normal");
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyin finals in normal tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllFinals("none");
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All pinyin finals in none tone: " << oss.str() << std::endl;
+
+  pinyins = processor.AllFinals("number");
+  oss.str("");
+  for (const auto &pinyin : pinyins) {
+    oss << pinyin << " ";
+  }
+  std::cerr << "All partial pinyin finals in number tone: " << oss.str()
+            << std::endl;
+}
+
+TEST(PinyinEncoder, TestValidPinyin) {
+  PinyinEncoder processor;
+  std::vector<std::string> pinyins = {
+      "wǒ",   "shì", "zhōng", "guó", "rén", "wǒ",   "ài",     "wǒ",   "de",
+      "love", "you", "zǔ",    "guó", "wo3", "shi4", "zhong1", "guo2", "ren2",
+      "wo3",  "ai4", "wo3",   "de",  "zu3", "guo2", "wo",     "shi",  "zhong",
+      "guo",  "ren", "wo",    "ai",  "wo",  "de",   "zu",     "guo"};
+  std::vector<bool> valids = {
+      true, true, true, true, true, true, true, true, true, false, true, true,
+      true, true, true, true, true, true, true, true, true, true,  true, true,
+      true, true, true, true, true, true, true, true, true, true,  true};
+
+  for (int32_t i = 0; i < pinyins.size(); ++i) {
+    EXPECT_EQ(processor.ValidPinyin(pinyins[i]), valids[i]);
+  }
+
+  pinyins = {"wǒ", "shì", "zhōng", "guó", "rén", "wǒ", "ài",
+             "wǒ", "de",  "love",  "you", "zǔ",  "guó"};
+  valids = {true, true, true,  true,  true, true, true,
+            true, true, false, false, true, true};
+
+  for (int32_t i = 0; i < pinyins.size(); ++i) {
+    EXPECT_EQ(processor.ValidPinyin(pinyins[i], "normal"), valids[i]);
+  }
+
+  pinyins = {"wo3", "shi4", "zhong1", "guo2", "ren2", "wo3", "ai4",
+             "wo3", "de",   "love",   "you",  "zu3",  "guo2"};
+  valids = {true, true, true,  true,  true, true, true,
+            true, true, false, false, true, true};
+
+  for (int32_t i = 0; i < pinyins.size(); ++i) {
+    EXPECT_EQ(processor.ValidPinyin(pinyins[i], "number"), valids[i]);
+  }
+
+  pinyins = {"wo", "shi", "zhong", "guo", "ren", "wo", "ai",
+             "wo", "de",  "love",  "you", "zu",  "guo"};
+  valids = {true, true, true,  true, true, true, true,
+            true, true, false, true, true, true};
+
+  for (int32_t i = 0; i < pinyins.size(); ++i) {
+    EXPECT_EQ(processor.ValidPinyin(pinyins[i], "none"), valids[i]);
+  }
+}
+
 } // namespace cppinyin
