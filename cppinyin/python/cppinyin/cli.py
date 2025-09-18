@@ -110,9 +110,7 @@ def build(output: Path, dict_path: Path, user_dict_path: Path):
     """
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-
     encoder = Encoder(get_dict_path(dict_path, user_dict_path))
-
     encoder.save(str(output))
 
 
@@ -127,11 +125,10 @@ def build(output: Path, dict_path: Path, user_dict_path: Path):
     "--user-dict-path", type=Path, help="The path to user customized dict."
 )
 @click.option(
-    "--no-tone",
-    is_flag=True,
-    show_default=True,
-    default=False,
-    help="Whether to include tones in output pinyins or not.",
+    "--tone",
+    type=click.Choice(["normal", "number", "none"]),
+    default="number",
+    help="Choose the tone style of pinyin",
 )
 @click.option(
     "--partial",
@@ -144,7 +141,7 @@ def encode(
     input: str,
     dict_path: Path,
     user_dict_path: Path,
-    no_tone: bool,
+    tone: str,
     partial: bool,
 ):
     """
@@ -161,14 +158,10 @@ def encode(
         with open(input, "r") as fi:
             for line in fi:
                 pinyin = " ".join(
-                    encoder.encode(
-                        line.strip(), tone=not no_tone, partial=partial
-                    )
+                    encoder.encode(line.strip(), tone=tone, partial=partial)
                 )
                 click.echo(f"{line.strip()}\t{pinyin}")
     else:
         click.echo(
-            " ".join(
-                encoder.encode(input.strip(), tone=not no_tone, partial=partial)
-            )
+            " ".join(encoder.encode(input.strip(), tone=tone, partial=partial))
         )

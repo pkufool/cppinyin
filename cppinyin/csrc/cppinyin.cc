@@ -232,13 +232,13 @@ void PinyinEncoder::Cut(const std::string &str,
       fail_bytes = 0;
       for (const auto &value : values_[std::get<2>(route[i])]) {
         auto value_t = value;
+        auto it = tone_to_normal_.find(value);
+        if (it == tone_to_normal_.end()) {
+          ostrs->push_back(value_t);
+          continue;
+        }
         if (tone == "normal") {
-          if (tone_to_normal_.find(value) != tone_to_normal_.end()) {
-            value_t = tone_to_normal_.at(value);
-          } else {
-            std::cerr << "PinyinEncoder: " << value
-                      << " is not in the NORMAL_TO_TONE map. " << std::endl;
-          }
+          value_t = it->second;
         }
         if (partial) {
           auto initial = GetInitial(value_t);
@@ -359,13 +359,9 @@ void PinyinEncoder::LoadVocab(std::istream &is) {
     std::vector<std::string> values;
     while (iss >> value) {
       // Always convert to tone in internal
-      if (!std::isdigit(value.back())) {
-        if (NORMAL_TO_TONE.find(value) == NORMAL_TO_TONE.end()) {
-          std::cerr << "PinyinEncoder: " << value
-                    << " is not in the NORMAL_TO_TONE map. " << std::endl;
-        } else {
-          value = NORMAL_TO_TONE.at(value);
-        }
+      auto it = NORMAL_TO_TONE.find(value);
+      if (it != NORMAL_TO_TONE.end()) {
+        value = it->second;
       }
       values.push_back(value);
     }
@@ -450,7 +446,8 @@ std::string PinyinEncoder::ToInitial(const std::string &s) const {
     return s;
   }
   if (tone_to_normal_.count(s) == 0 && NORMAL_TO_TONE.count(s) == 0) {
-    std::cerr << "ToInitial: " << s << " is not a valid pinyin. " << std::endl;
+    // std::cerr << "ToInitial: " << s << " is not a valid pinyin. " <<
+    // std::endl;
     return std::string();
   }
   return GetInitial(s);
@@ -477,7 +474,7 @@ std::string PinyinEncoder::ToFinal(const std::string &s,
   } else if (NORMAL_TO_TONE.find(s) != NORMAL_TO_TONE.end()) {
     value = NORMAL_TO_TONE.at(s);
   } else {
-    std::cerr << "ToFinal: " << s << " is not a valid pinyin. " << std::endl;
+    // std::cerr << "ToFinal: " << s << " is not a valid pinyin. " << std::endl;
     return std::string();
   }
   if (tone == "none") {
@@ -551,13 +548,9 @@ size_t PinyinEncoder::LoadValues(std::istream &ifile) {
     for (uint32_t j = 0; j < sub_size; ++j) {
       offset += ReadString(ifile, &value);
       // Always convert to number tone in internal
-      if (!std::isdigit(value.back())) {
-        if (NORMAL_TO_TONE.find(value) == NORMAL_TO_TONE.end()) {
-          std::cerr << "PinyinEncoder: " << value
-                    << " is not in the NORMAL_TO_TONE map. " << std::endl;
-        } else {
-          value = NORMAL_TO_TONE.at(value);
-        }
+      auto it = NORMAL_TO_TONE.find(value);
+      if (it != NORMAL_TO_TONE.end()) {
+        value = it->second;
       }
       values_[i][j] = value;
     }
